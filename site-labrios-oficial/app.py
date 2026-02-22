@@ -50,7 +50,7 @@ class Equipment(db.Model):
     model = db.Column(db.String(100))
     purpose = db.Column(db.Text)
     image = db.Column(db.String(100))
-    quantity = db.Column(db.Integer, default=1)  # <-- ADICIONADO
+    quantity = db.Column(db.Integer, nullable=False, default=1)
     reserves = db.relationship('Reservation', backref='equipment', cascade="all, delete-orphan", lazy=True)
 
 class Reservation(db.Model):
@@ -85,7 +85,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # -----------------------------
-# FUNÇÃO AUXILIAR SEGURA
+# FUNÇÃO AUXILIAR
 # -----------------------------
 def get_settings():
     settings = LabSettings.query.first()
@@ -188,6 +188,18 @@ def update_settings():
     flash("Configurações salvas!", "success")
     return redirect(url_for("admin_panel"))
 
+@app.route("/admin/delete_regimento", methods=["POST"])
+@login_required
+def delete_regimento():
+    s = get_settings()
+    if s.regimento_pdf:
+        path = os.path.join(app.config['PDF_FOLDER'], s.regimento_pdf)
+        if os.path.exists(path):
+            os.remove(path)
+        s.regimento_pdf = None
+        db.session.commit()
+    return redirect(url_for("admin_panel"))
+
 @app.route("/admin/add_equipment", methods=["POST"])
 @login_required
 def add_equipment():
@@ -202,8 +214,8 @@ def add_equipment():
         brand=request.form.get("brand"),
         model=request.form.get("model"),
         purpose=request.form.get("purpose"),
-        quantity=int(request.form.get("quantity")),  # <-- ADICIONADO
-        image=filename
+        image=filename,
+        quantity=request.form.get("quantity", type=int)
     ))
     db.session.commit()
     return redirect(url_for("admin_panel"))

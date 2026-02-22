@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <div class="card shadow-sm p-4 mt-5 border-0">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold" style="color: var(--navy);">Acesso Restrito</h3>
+                <small class="text-muted">Painel do Coordenador</small>
+            </div>
+            <form method="post" action="{{ url_for('login') }}">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Usuário</label>
+                    <input type="text" name="user" class="form-control" required autofocus>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold">Senha</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-navy w-100 py-2 fw-bold">ENTRAR</button>
+            </form>
+            <div class="mt-4 text-center">
+                <a href="/" class="small text-muted text-decoration-none"><i class="fas fa-home"></i> Voltar ao Início</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

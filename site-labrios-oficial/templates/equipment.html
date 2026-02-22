@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0" style="color: var(--navy);">Equipamentos</h2>
+    <a href="/" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+</div>
+
+<div class="table-responsive bg-white shadow-sm rounded">
+    <table class="table table-hover align-middle mb-0">
+        <thead style="background: var(--navy); color: white;">
+            <tr>
+                <th>Foto</th>
+                <th>Nome</th>
+                <th>Modelo/Marca</th>
+                <th>Finalidade</th>
+                <th class="text-center">Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in equipments %}
+            <tr>
+                <td style="width: 100px;">
+                    {% if e.image %}
+                    <img src="{{ url_for('static', filename='uploads/' + e.image) }}" width="80" class="rounded shadow-sm">
+                    {% else %}
+                    <i class="fas fa-microscope text-muted fa-2x"></i>
+                    {% endif %}
+                </td>
+                <td><strong>{{ e.name }}</strong></td>
+                <td>{{ e.model }} <br><small class="text-muted">{{ e.brand }}</small></td>
+                <td><small>{{ e.purpose }}</small></td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="{{ settings.external_form_link }}" target="_blank" class="btn btn-navy btn-sm">Solicitar</a>
+                        {% if current_user.is_authenticated %}
+                        <form action="/admin/delete_equipment/{{ e.id }}" method="POST" onsubmit="return confirm('Excluir equipamento?');">
+                            <button class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center p-4">Nenhum equipamento cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

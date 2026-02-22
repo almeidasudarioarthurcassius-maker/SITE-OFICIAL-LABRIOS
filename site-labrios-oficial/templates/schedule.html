@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="text-center mb-4">
+    <h2 style="color: var(--navy);">Calendário de Utilização</h2>
+    <a href="/" class="btn btn-sm btn-outline-secondary">Voltar ao Início</a>
+</div>
+
+<div id="calendar"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+        initialView: 'timeGridWeek',
+        locale: 'pt-br',
+        selectable: false,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: '/api/events',
+        eventClick: function(info) {
+            alert(
+                "Equipamento: " + info.event.title +
+                "\nResponsável: " + info.event.extendedProps.name +
+                "\nInstituição: " + info.event.extendedProps.institution +
+                "\nFunção: " + info.event.extendedProps.role
+            );
+        }
+    });
+    calendar.render();
+});
+</script>
+
+{% endblock %}

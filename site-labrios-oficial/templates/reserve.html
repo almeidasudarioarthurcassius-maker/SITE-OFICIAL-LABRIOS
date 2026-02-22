@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 style="color: var(--navy);">Solicitação de Reserva</h2>
+<a href="/equipment" class="btn btn-sm btn-outline-secondary mb-3">Voltar</a>
+
+<form method="POST">
+
+<label>Início</label>
+<input type="datetime-local" name="start" class="form-control mb-3" required>
+
+<label>Fim</label>
+<input type="datetime-local" name="end" class="form-control mb-3" required>
+
+<hr>
+
+<input type="text" name="name" placeholder="Nome" class="form-control mb-2" required>
+<input type="email" name="email" placeholder="Email" class="form-control mb-2" required>
+<input type="text" name="institution" placeholder="Instituição" class="form-control mb-2" required>
+<input type="text" name="role" placeholder="Função" class="form-control mb-2" required>
+<input type="url" name="lattes" placeholder="Link Lattes" class="form-control mb-3">
+
+<button class="btn btn-navy">Enviar Solicitação</button>
+
+</form>
+
+{% endblock %}

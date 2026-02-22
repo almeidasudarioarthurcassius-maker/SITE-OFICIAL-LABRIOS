@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LABRIOS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --navy: #000080; }
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        .content-wrapper { flex: 1; }
+        .navbar { background: var(--navy) !important; border-bottom: 3px solid #f1c40f; }
+        .btn-navy { background: var(--navy); color: white; }
+        .btn-navy:hover { background: #000050; color: white; }
+        footer { border-top: 1px solid #eee; padding: 2rem 0; font-size: 0.85rem; color: #777; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark shadow sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">LABRIOS</a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/">INÍCIO</a></li>
+                <li class="nav-item"><a class="nav-link" href="/how-to-use">COMO USAR</a></li>
+                <li class="nav-item"><a class="nav-link" href="/equipment">EQUIPAMENTOS</a></li>
+                <li class="nav-item"><a class="nav-link" href="/team">EQUIPE</a></li>
+                
+                {% if current_user.is_authenticated %}
+                  <li class="nav-item"><a class="nav-link text-warning fw-bold" href="/admin">PAINEL GESTOR</a></li>
+                  <li class="nav-item"><a class="nav-link" href="/logout">SAIR</a></li>
+                {% else %}
+                  <li class="nav-item"><a class="nav-link" href="/login"><i class="fas fa-lock"></i> LOGIN</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container my-4 content-wrapper">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</div>
+
+<footer class="text-center mt-5">
+    <div class="container">
+        <p class="mb-1"><strong>{{ settings.lab_name if settings else 'LABRIOS' }}</strong></p>
+        <p class="mb-0">LABORATÓRIO DE TECNOLOGIA DA INFORMAÇÃO DO PROFÁGUA - LTIP</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -50,6 +50,7 @@ class Equipment(db.Model):
     model = db.Column(db.String(100))
     purpose = db.Column(db.Text)
     image = db.Column(db.String(100))
+    quantity = db.Column(db.Integer, default=1)  # <-- ADICIONADO
     reserves = db.relationship('Reservation', backref='equipment', cascade="all, delete-orphan", lazy=True)
 
 class Reservation(db.Model):
@@ -201,6 +202,7 @@ def add_equipment():
         brand=request.form.get("brand"),
         model=request.form.get("model"),
         purpose=request.form.get("purpose"),
+        quantity=int(request.form.get("quantity")),  # <-- ADICIONADO
         image=filename
     ))
     db.session.commit()

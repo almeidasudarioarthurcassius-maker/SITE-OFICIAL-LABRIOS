@@ -14,6 +14,7 @@
                 <th>Nome</th>
                 <th>Modelo/Marca</th>
                 <th>Finalidade</th>
+                <th class="text-center">Quantidade</th>
                 <th class="text-center">Ação</th>
             </tr>
         </thead>
@@ -31,6 +32,9 @@
                 <td>{{ e.model }} <br><small class="text-muted">{{ e.brand }}</small></td>
                 <td><small>{{ e.purpose }}</small></td>
                 <td class="text-center">
+                    <strong>{{ e.quantity }}</strong>
+                </td>
+                <td class="text-center">
                     <div class="d-flex justify-content-center gap-2">
                         <a href="{{ settings.external_form_link }}" target="_blank" class="btn btn-navy btn-sm">Solicitar</a>
                         {% if current_user.is_authenticated %}
@@ -42,9 +46,14 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="5" class="text-center p-4">Nenhum equipamento cadastrado.</td></tr>
+            <tr>
+                <td colspan="6" class="text-center p-4">
+                    Nenhum equipamento cadastrado.
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
 {% endblock %}

@@ -287,3 +287,12 @@ def add_rule():
         db.session.commit()
     return redirect(url_for("admin_panel"))
 
+@app.route("/admin/delete_rule/<int:id>", methods=["POST"])
+@login_required
+def delete_rule(id):
+    db.session.delete(Rule.query.get_or_404(id))
+    db.session.commit()
+    return redirect(url_for("admin_panel"))
+
+if __name__ == "__main__":
+    app.run(debug=True)

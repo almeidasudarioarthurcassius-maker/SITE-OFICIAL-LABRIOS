@@ -19,16 +19,13 @@
                 {% for e in equipments %}
                 <tr>
                     <td>
-                        {% if e.image %}
-                            <img src="{{ url_for('static', filename='uploads/' + e.image) }}" width="80">
-                        {% else %}
-                            <span class="text-muted">Sem foto</span>
-                        {% endif %}
+                        {% if e.image %}<img src="{{ url_for('static', filename='uploads/' + e.image) }}" width="80">
+                        {% else %}<span class="text-muted">Sem foto</span>{% endif %}
                     </td>
                     <td><strong>{{ e.name }}</strong></td>
                     <td>{{ e.model }} / {{ e.brand }}</td>
                     <td>{{ e.purpose }}</td>
-                    <td><strong>{{ e.quantity }}</strong></td>
+                    <td>{{ e.quantity }}</td>
                     <td>
                         <a href="{{ url_for('request_reservation', equipment_id=e.id) }}" class="btn btn-primary btn-sm">Solicitar</a>
                         {% if current_user.is_authenticated %}

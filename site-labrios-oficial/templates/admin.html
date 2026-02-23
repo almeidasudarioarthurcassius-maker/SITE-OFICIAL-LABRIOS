@@ -6,7 +6,7 @@
         <a href="{{ url_for('home') }}" class="btn btn-outline-primary">Visualizar Site</a>
     </div>
 
-    <!-- NOVA SEÇÃO: FILA DE ESPERA -->
+    <!-- SEÇÃO: FILA DE ESPERA -->
     <div class="card p-3 shadow-sm mb-4">
         <h3>Fila de Espera (Solicitações Pendentes)</h3>
         <div class="table-responsive">
@@ -49,9 +49,9 @@
     <div class="row">
         <!-- CONFIGURAÇÕES GERAIS -->
         <div class="col-md-6 mb-4">
-            <div class="card p-3 shadow-sm">
+            <div class="card p-3 shadow-sm h-100">
                 <h3>Configurações Gerais</h3>
-                <form action="{{ url_for('update_settings') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ url_for('update_settings') }}" method="POST" enctype="multipart/form-data" id="mainSettingsForm">
                     <label>Nome do Laboratório</label>
                     <input type="text" name="lab_name" class="form-control mb-2" value="{{ settings.lab_name }}">
                     <label>Link do Formulário de Reserva</label>
@@ -60,19 +60,24 @@
                     <textarea name="hero_text" class="form-control mb-2">{{ settings.hero_text }}</textarea>
                     <label>Atualizar Regimento (PDF)</label>
                     <input type="file" name="regimento" class="form-control mb-2">
-                    {% if settings.regimento_pdf %}
-                        <form action="{{ url_for('delete_regimento') }}" method="POST" style="display:inline;">
-                            <button class="btn btn-link text-danger p-0">Remover PDF Atual</button>
-                        </form>
-                    {% endif %}
                     <button type="submit" class="btn btn-primary w-100 mt-2">Salvar Alterações</button>
                 </form>
+
+                <!-- FORMULÁRIO DE EXCLUSÃO SEPARADO (PARA NÃO ANINHAR) -->
+                {% if settings.regimento_pdf %}
+                <div class="mt-3 p-2 border rounded bg-light text-center">
+                    <p class="mb-1 small">Arquivo atual: <strong>{{ settings.regimento_pdf }}</strong></p>
+                    <form action="{{ url_for('delete_regimento') }}" method="POST">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Remover PDF Atual</button>
+                    </form>
+                </div>
+                {% endif %}
             </div>
         </div>
 
         <!-- NOVO EQUIPAMENTO -->
         <div class="col-md-6 mb-4">
-            <div class="card p-3 shadow-sm">
+            <div class="card p-3 shadow-sm h-100">
                 <h3>Novo Equipamento</h3>
                 <form action="{{ url_for('add_equipment') }}" method="POST" enctype="multipart/form-data">
                     <input type="text" name="name" class="form-control mb-2" placeholder="Nome" required>
@@ -86,7 +91,7 @@
             </div>
         </div>
 
-        <!-- NOVO MEMBRO (RESTAURADO) -->
+        <!-- NOVO MEMBRO -->
         <div class="col-md-6 mb-4">
             <div class="card p-3 shadow-sm">
                 <h3>Novo Membro</h3>
@@ -103,12 +108,12 @@
         <!-- REGRAS -->
         <div class="col-md-6 mb-4">
             <div class="card p-3 shadow-sm">
-                <h3>Adicionar Regra de Uso</h3>
+                <h3>Regras e Diretrizes</h3>
                 <form action="{{ url_for('add_rule') }}" method="POST">
                     <textarea name="content" class="form-control mb-2" placeholder="Texto da regra" required></textarea>
-                    <button type="submit" class="btn btn-secondary w-100">Adicionar</button>
+                    <button type="submit" class="btn btn-secondary w-100">Adicionar Regra</button>
                 </form>
-                <div class="mt-3">
+                <div class="mt-3" style="max-height: 200px; overflow-y: auto;">
                     {% for rule in rules %}
                     <div class="d-flex justify-content-between align-items-center border-bottom py-1">
                         <small>{{ rule.content[:50] }}...</small>

@@ -4,23 +4,23 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 
-# --- IMPLEMENTAÇÃO CIRÚRGICA CLOUDINARY ---
+# --- IMPLEMENTAÇÃO CLOUDINARY ---
 import cloudinary
 import cloudinary.uploader
 
 cloudinary.config(
-  cloud_name = "dlwydwoz1",
+  cloud_name = "LABRIOS-UPLODS",
   api_key = "165575356491915",
   api_secret = "3Dwwxqub3r-hbT2qkt2SDW0cgOI",
   secure = True
 )
-# ------------------------------------------
+# --------------------------------
 
 app = Flask(__name__)
 app.secret_key = "labrios_master_key_2026"
 
 # -----------------------------
-# PASTAS (Mantidas conforme código original)
+# PASTAS
 # -----------------------------
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static/uploads')
@@ -41,7 +41,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # -----------------------------
-# MODELOS (Ajustado tamanho das Strings para URLs do Cloudinary)
+# MODELOS
 # -----------------------------
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,7 +53,7 @@ class Member(db.Model):
     name = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(100))
     lattes = db.Column(db.String(200))
-    photo = db.Column(db.String(500)) # Aumentado para URL
+    photo = db.Column(db.String(500)) # Ajustado para suportar URL
 
 class Equipment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,7 +61,7 @@ class Equipment(db.Model):
     brand = db.Column(db.String(100))
     model = db.Column(db.String(100))
     purpose = db.Column(db.Text)
-    image = db.Column(db.String(500)) # Aumentado para URL
+    image = db.Column(db.String(500)) # Ajustado para suportar URL
     quantity = db.Column(db.Integer, nullable=False, default=1)
     reserves = db.relationship('Reservation', backref='equipment', cascade="all, delete-orphan", lazy=True)
 
@@ -86,7 +86,7 @@ class LabSettings(db.Model):
     lab_name = db.Column(db.String(200), default="LABRIOS")
     hero_text = db.Column(db.Text, default="Bem-vindo ao Laboratório.")
     external_form_link = db.Column(db.String(300))
-    regimento_pdf = db.Column(db.String(500)) # Aumentado para URL
+    regimento_pdf = db.Column(db.String(500)) # Ajustado para suportar URL
 
 # -----------------------------
 # LOGIN E AUXILIARES
@@ -234,7 +234,7 @@ def update_settings():
     
     pdf = request.files.get("regimento")
     if pdf and pdf.filename != '':
-        # Upload para Cloudinary como recurso bruto (PDF)
+        # Upload para Cloudinary como recurso raw (PDF)
         upload_result = cloudinary.uploader.upload(pdf, resource_type="raw")
         s.regimento_pdf = upload_result['secure_url']
 

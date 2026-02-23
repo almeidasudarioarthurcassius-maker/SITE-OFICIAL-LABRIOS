@@ -1,59 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold m-0" style="color: var(--navy);">Equipamentos</h2>
-    <a href="/" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
-</div>
-
-<div class="table-responsive bg-white shadow-sm rounded">
-    <table class="table table-hover align-middle mb-0">
-        <thead style="background: var(--navy); color: white;">
-            <tr>
-                <th>Foto</th>
-                <th>Nome</th>
-                <th>Modelo/Marca</th>
-                <th>Finalidade</th>
-                <th class="text-center">Quantidade</th>
-                <th class="text-center">Ação</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for e in equipments %}
-            <tr>
-                <td style="width: 100px;">
-                    {% if e.image %}
-                    <img src="{{ url_for('static', filename='uploads/' + e.image) }}" width="80" class="rounded shadow-sm">
-                    {% else %}
-                    <i class="fas fa-microscope text-muted fa-2x"></i>
-                    {% endif %}
-                </td>
-                <td><strong>{{ e.name }}</strong></td>
-                <td>{{ e.model }} <br><small class="text-muted">{{ e.brand }}</small></td>
-                <td><small>{{ e.purpose }}</small></td>
-                <td class="text-center">
-                    <strong>{{ e.quantity }}</strong>
-                </td>
-                <td class="text-center">
-                    <div class="d-flex justify-content-center gap-2">
-                        <a href="{{ settings.external_form_link }}" target="_blank" class="btn btn-navy btn-sm">Solicitar</a>
-                        {% if current_user.is_authenticated %}
-                        <form action="/admin/delete_equipment/{{ e.id }}" method="POST" onsubmit="return confirm('Excluir equipamento?');">
-                            <button class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></button>
-                        </form>
+<div class="container mt-4">
+    <h2>Equipamentos</h2>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary mb-3">Voltar</a>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Foto</th>
+                    <th>Nome</th>
+                    <th>Modelo/Marca</th>
+                    <th>Finalidade</th>
+                    <th>Quantidade</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in equipments %}
+                <tr>
+                    <td>
+                        {% if e.image %}
+                            <img src="{{ url_for('static', filename='uploads/' + e.image) }}" width="80">
+                        {% else %}
+                            <span class="text-muted">Sem foto</span>
                         {% endif %}
-                    </div>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="6" class="text-center p-4">
-                    Nenhum equipamento cadastrado.
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    </td>
+                    <td><strong>{{ e.name }}</strong></td>
+                    <td>{{ e.model }} / {{ e.brand }}</td>
+                    <td>{{ e.purpose }}</td>
+                    <td><strong>{{ e.quantity }}</strong></td>
+                    <td>
+                        <a href="{{ url_for('request_reservation', equipment_id=e.id) }}" class="btn btn-primary btn-sm">Solicitar</a>
+                        {% if current_user.is_authenticated %}
+                            <form action="{{ url_for('delete_equipment', id=e.id) }}" method="POST" style="display:inline;">
+                                <button class="btn btn-danger btn-sm">Excluir</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">Nenhum equipamento cadastrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-
 {% endblock %}

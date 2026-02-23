@@ -1,9 +1,10 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import cloudinary
 import cloudinary.uploader
+import io
 
 app = Flask(__name__)
 app.secret_key = "labrios_master_key_2026"
@@ -74,7 +75,9 @@ class LabSettings(db.Model):
     lab_name = db.Column(db.String(200), default="LABRIOS")
     hero_text = db.Column(db.Text, default="Bem-vindo ao Laboratório.")
     external_form_link = db.Column(db.String(300))
-    regimento_pdf = db.Column(db.String(255))
+    # Alterado para armazenar o binário do PDF e o nome do arquivo
+    regimento_data = db.Column(db.LargeBinary)
+    regimento_filename = db.Column(db.String(255))
 
 # -----------------------------
 # LOGIN E AUXILIARES
@@ -110,6 +113,19 @@ def team():
 def how_to_use():
     return render_template("how_to_use.html", rules=Rule.query.all(), settings=get_settings())
 
+@app.route("/download_regimento")
+def download_regimento():
+    s = get_settings()
+    if not s.regimento_data:
+        flash("Arquivo não disponível.", "warning")
+        return redirect(url_for("how_to_use"))
+    return send_file(
+        io.BytesIO(s.regimento_data),
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=s.regimento_filename or "Regimento_LABRIOS.pdf"
+    )
+
 @app.route("/equipment")
 def equipment_list():
     return render_template("equipment.html", equipments=Equipment.query.all(), settings=get_settings())
@@ -131,7 +147,7 @@ def request_reservation(equipment_id):
         )
         db.session.add(new_res)
         db.session.commit()
-        flash("Solicitação enviada!", "info")
+        flash("Solicitação enviada! Aguarde a aprovação do coordenador.", "info")
         return redirect(url_for("equipment_list"))
     return render_template("reserve.html", equipment=equipment, settings=get_settings())
 
@@ -211,16 +227,8 @@ def update_settings():
     
     pdf = request.files.get("regimento")
     if pdf and pdf.filename != '':
-        # CORREÇÃO: Usando resource_type="raw" e public_id com extensão .pdf para entrega correta
-        upload_result = cloudinary.uploader.upload(
-            pdf, 
-            resource_type="raw", 
-            folder="labrios/docs",
-            public_id="regimento_labrios.pdf",
-            use_filename=True,
-            unique_filename=False
-        )
-        s.regimento_pdf = upload_result['secure_url']
+        s.regimento_data = pdf.read() # Salva o binário no PostgreSQL
+        s.regimento_filename = pdf.filename
     db.session.commit()
     flash("Configurações salvas!", "success")
     return redirect(url_for("admin_panel"))
@@ -229,9 +237,10 @@ def update_settings():
 @login_required
 def delete_regimento():
     s = get_settings()
-    s.regimento_pdf = None
+    s.regimento_data = None
+    s.regimento_filename = None
     db.session.commit()
-    flash("Regimento PDF removido.", "warning")
+    flash("Regimento removido.", "warning")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_equipment", methods=["POST"])

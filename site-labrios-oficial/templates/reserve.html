@@ -1,27 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="container mt-4">
+    <h2>Solicitação de Reserva: {{ equipment.name }}</h2>
+    <a href="{{ url_for('equipment_list') }}" class="btn btn-secondary mb-3">Voltar</a>
+    
+    <div class="alert alert-warning">
+        <strong>Atenção:</strong> É obrigatório que você preencha também o 
+        <a href="{{ settings.external_form_link }}" target="_blank">Formulário Oficial do Coordenador</a> 
+        antes de enviar esta solicitação.
+    </div>
 
-<h2 style="color: var(--navy);">Solicitação de Reserva</h2>
-<a href="/equipment" class="btn btn-sm btn-outline-secondary mb-3">Voltar</a>
-
-<form method="POST">
-
-<label>Início</label>
-<input type="datetime-local" name="start" class="form-control mb-3" required>
-
-<label>Fim</label>
-<input type="datetime-local" name="end" class="form-control mb-3" required>
-
-<hr>
-
-<input type="text" name="name" placeholder="Nome" class="form-control mb-2" required>
-<input type="email" name="email" placeholder="Email" class="form-control mb-2" required>
-<input type="text" name="institution" placeholder="Instituição" class="form-control mb-2" required>
-<input type="text" name="role" placeholder="Função" class="form-control mb-2" required>
-<input type="url" name="lattes" placeholder="Link Lattes" class="form-control mb-3">
-
-<button class="btn btn-navy">Enviar Solicitação</button>
-
-</form>
-
+    <form method="POST" class="card p-4 shadow-sm">
+        <div class="mb-3">
+            <label class="form-label">Nome Completo</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Instituição</label>
+            <input type="text" name="institution" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Função Exercida</label>
+            <input type="text" name="role" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Link do Currículo Lattes Atualizado</label>
+            <input type="url" name="lattes" class="form-control" placeholder="https://lattes.cnpq.br/..." required>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Data de Uso</label>
+                <input type="date" name="date" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Início</label>
+                <input type="time" name="start_time" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Término</label>
+                <input type="time" name="end_time" class="form-control" required>
+            </div>
+        </div>
+        <hr>
+        <button type="submit" class="btn btn-success w-100">Enviar Solicitação para Fila</button>
+    </form>
+</div>
 {% endblock %}

@@ -4,23 +4,23 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 
-# --- IMPLEMENTAÇÃO CLOUDINARY ---
+# --- IMPLEMENTAÇÃO CIRÚRGICA CLOUDINARY ---
 import cloudinary
 import cloudinary.uploader
 
 cloudinary.config(
   cloud_name = "dlwydwoz1",
-  api_key = os.environ.get('CLOUDINARY_API_KEY'), # Recomenda-se definir nas variáveis de ambiente
-  api_secret = os.environ.get('CLOUDINARY_API_SECRET'), # Recomenda-se definir nas variáveis de ambiente
+  api_key = "165575356491915",
+  api_secret = "3Dwwxqub3r-hbT2qkt2SDW0cgOI",
   secure = True
 )
-# --------------------------------
+# ------------------------------------------
 
 app = Flask(__name__)
 app.secret_key = "labrios_master_key_2026"
 
 # -----------------------------
-# PASTAS (Mantidas para compatibilidade, embora uploads novos usem Cloudinary)
+# PASTAS (Mantidas conforme código original)
 # -----------------------------
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static/uploads')
@@ -41,7 +41,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # -----------------------------
-# MODELOS
+# MODELOS (Ajustado tamanho das Strings para URLs do Cloudinary)
 # -----------------------------
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,7 +53,7 @@ class Member(db.Model):
     name = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(100))
     lattes = db.Column(db.String(200))
-    photo = db.Column(db.String(500)) # Aumentado para suportar URLs longas
+    photo = db.Column(db.String(500)) # Aumentado para URL
 
 class Equipment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,7 +61,7 @@ class Equipment(db.Model):
     brand = db.Column(db.String(100))
     model = db.Column(db.String(100))
     purpose = db.Column(db.Text)
-    image = db.Column(db.String(500)) # Aumentado para suportar URLs longas
+    image = db.Column(db.String(500)) # Aumentado para URL
     quantity = db.Column(db.Integer, nullable=False, default=1)
     reserves = db.relationship('Reservation', backref='equipment', cascade="all, delete-orphan", lazy=True)
 
@@ -86,7 +86,7 @@ class LabSettings(db.Model):
     lab_name = db.Column(db.String(200), default="LABRIOS")
     hero_text = db.Column(db.Text, default="Bem-vindo ao Laboratório.")
     external_form_link = db.Column(db.String(300))
-    regimento_pdf = db.Column(db.String(500)) # Aumentado para suportar URLs longas
+    regimento_pdf = db.Column(db.String(500)) # Aumentado para URL
 
 # -----------------------------
 # LOGIN E AUXILIARES
@@ -234,7 +234,7 @@ def update_settings():
     
     pdf = request.files.get("regimento")
     if pdf and pdf.filename != '':
-        # Implementação Cloudinary para PDF (recurso raw)
+        # Upload para Cloudinary como recurso bruto (PDF)
         upload_result = cloudinary.uploader.upload(pdf, resource_type="raw")
         s.regimento_pdf = upload_result['secure_url']
 
@@ -248,7 +248,7 @@ def delete_regimento():
     s = get_settings()
     s.regimento_pdf = None
     db.session.commit()
-    flash("Regimento PDF excluído das configurações!", "warning")
+    flash("Regimento PDF excluído com sucesso!", "warning")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_equipment", methods=["POST"])
@@ -257,17 +257,14 @@ def add_equipment():
     f = request.files.get('image')
     image_url = None
     if f and f.filename != '':
-        # Implementação Cloudinary para Imagem
+        # Upload para Cloudinary (Imagem)
         upload_result = cloudinary.uploader.upload(f)
         image_url = upload_result['secure_url']
 
     db.session.add(Equipment(
-        name=request.form.get("name"), 
-        brand=request.form.get("brand"),
-        model=request.form.get("model"), 
-        purpose=request.form.get("purpose"),
-        image=image_url, 
-        quantity=request.form.get("quantity", type=int)
+        name=request.form.get("name"), brand=request.form.get("brand"),
+        model=request.form.get("model"), purpose=request.form.get("purpose"),
+        image=image_url, quantity=request.form.get("quantity", type=int)
     ))
     db.session.commit()
     flash("Equipamento cadastrado!", "success")
@@ -287,15 +284,13 @@ def add_member():
     f = request.files.get('photo')
     photo_url = None
     if f and f.filename != '':
-        # Implementação Cloudinary para Foto
+        # Upload para Cloudinary (Imagem)
         upload_result = cloudinary.uploader.upload(f)
         photo_url = upload_result['secure_url']
 
     db.session.add(Member(
-        name=request.form.get("name"), 
-        role=request.form.get("role"),
-        lattes=request.form.get("lattes"), 
-        photo=photo_url
+        name=request.form.get("name"), role=request.form.get("role"),
+        lattes=request.form.get("lattes"), photo=photo_url
     ))
     db.session.commit()
     flash("Membro adicionado!", "success")

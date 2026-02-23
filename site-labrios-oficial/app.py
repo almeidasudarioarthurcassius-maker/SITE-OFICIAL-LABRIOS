@@ -86,9 +86,6 @@ login_manager.login_view = "login"
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# -----------------------------
-# FUNÇÃO AUXILIAR
-# -----------------------------
 def get_settings():
     settings = LabSettings.query.first()
     if not settings:
@@ -157,7 +154,7 @@ def get_events():
     return jsonify(events)
 
 # -----------------------------
-# LOGIN
+# ADMIN E GESTÃO
 # -----------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -175,9 +172,6 @@ def logout():
     logout_user()
     return redirect(url_for("home"))
 
-# -----------------------------
-# ADMIN
-# -----------------------------
 @app.route("/admin")
 @login_required
 def admin_panel():
@@ -200,7 +194,7 @@ def approve_reservation(id):
         Reservation.end_time > res.start_time
     ).first()
     if conflict:
-        flash("Impossibilidade de reserva: O equipamento já está reservado neste horário.", "danger")
+        flash("Impossibilidade de reserva: Conflito de horário para este equipamento.", "danger")
     else:
         res.status = 'Aprovado'
         db.session.commit()
@@ -238,8 +232,7 @@ def delete_regimento():
     s = get_settings()
     if s.regimento_pdf:
         path = os.path.join(app.config['PDF_FOLDER'], s.regimento_pdf)
-        if os.path.exists(path):
-            os.remove(path)
+        if os.path.exists(path): os.remove(path)
         s.regimento_pdf = None
         db.session.commit()
     return redirect(url_for("admin_panel"))
@@ -248,17 +241,12 @@ def delete_regimento():
 @login_required
 def add_equipment():
     f = request.files.get('image')
-    filename = None
-    if f and f.filename != '':
-        filename = secure_filename(f.filename)
-        f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    filename = secure_filename(f.filename) if f and f.filename != '' else None
+    if filename: f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     db.session.add(Equipment(
-        name=request.form.get("name"),
-        brand=request.form.get("brand"),
-        model=request.form.get("model"),
-        purpose=request.form.get("purpose"),
-        image=filename,
-        quantity=request.form.get("quantity", type=int)
+        name=request.form.get("name"), brand=request.form.get("brand"),
+        model=request.form.get("model"), purpose=request.form.get("purpose"),
+        image=filename, quantity=request.form.get("quantity", type=int)
     ))
     db.session.commit()
     return redirect(url_for("admin_panel"))
@@ -274,15 +262,11 @@ def delete_equipment(id):
 @login_required
 def add_member():
     f = request.files.get('photo')
-    filename = None
-    if f and f.filename != '':
-        filename = secure_filename(f.filename)
-        f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    filename = secure_filename(f.filename) if f and f.filename != '' else None
+    if filename: f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     db.session.add(Member(
-        name=request.form.get("name"),
-        role=request.form.get("role"),
-        lattes=request.form.get("lattes"),
-        photo=filename
+        name=request.form.get("name"), role=request.form.get("role"),
+        lattes=request.form.get("lattes"), photo=filename
     ))
     db.session.commit()
     return redirect(url_for("admin_panel"))
@@ -303,12 +287,3 @@ def add_rule():
         db.session.commit()
     return redirect(url_for("admin_panel"))
 
-@app.route("/admin/delete_rule/<int:id>", methods=["POST"])
-@login_required
-def delete_rule(id):
-    db.session.delete(Rule.query.get_or_404(id))
-    db.session.commit()
-    return redirect(url_for("admin_panel"))
-
-if __name__ == "__main__":
-    app.run(debug=True)

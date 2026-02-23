@@ -1,26 +1,41 @@
 {% extends "base.html" %}
+
 {% block content %}
-<h1>Corpo Científico e Técnico</h1>
+
+Corpo Científico e Técnico
+
 Voltar </>
+
 {% for m in members %}
-<div class="member-card">
-    {% if m.photo %}
-        <img src="{{ m.photo }}" alt="{{ m.name }}">
-    {% else %}
-        <div class="no-photo">N/A</div>
-    {% endif %}
-    <h3>{{ m.name }}</h3>
-    <p>{{ m.role }}</p>
-    {% if m.lattes %}
-        Currículo Lattes <{{ m.lattes }}>
-    {% endif %}
-    {% if current_user.is_authenticated %}
-        <form action="{{ url_for('delete_member', id=m.id) }}" method="POST">
-            <button type="submit">Remover</button>
-        </form>
-    {% endif %}
-</div>
+
+{% if m.photo %}
+<img src="{{ m.photo }}" alt="{{ m.name }}" style="width: 150px;">
 {% else %}
-<p>Nenhum membro cadastrado.</p>
+<div class="no-photo">N/A</div>
+{% endif %}
+
+{{ m.name }}
+
+{{ m.role }}
+
+{% if m.lattes %}
+
+Currículo Lattes <{{ m.lattes }}>
+
+{% endif %}
+
+{% if current_user.is_authenticated %}
+
+<form action="{{ url_for('delete_member', id=m.id) }}" method="POST">
+    <button type="submit">Remover</button>
+</form>
+
+{% endif %}
+
+{% else %}
+
+Nenhum membro cadastrado.
+
 {% endfor %}
+
 {% endblock %}

@@ -10,16 +10,219 @@ import cloudinary.uploader
 
 cloudinary.config(
   cloud_name = "dlwydwoz1",
-  api_key = os.environ.get('CLOUDINARY_API_KEY'), # Defina nas variáveis de ambiente
-  api_secret = os.environ.get('CLOUDINARY_API_SECRET'), # Defina nas variáveis de ambiente
+  api_key = os.environ.get('CLOUDINARY_API_KEY'), # Recomenda-se definir nas variáveis de ambiente
+  api_secret = os.environ.get('CLOUDINARY_API_SECRET'), # Recomenda-se definir nas variáveis de ambiente
   secure = True
 )
 # --------------------------------
 
 app = Flask(__name__)
-# ... (restante das configurações de banco e modelos permanecem iguais)
+app.secret_key = "labrios_master_key_2026"
 
-# --- ROTAS DE ADMINISTRAÇÃO CORRIGIDAS ---
+# -----------------------------
+# PASTAS (Mantidas para compatibilidade, embora uploads novos usem Cloudinary)
+# -----------------------------
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static/uploads')
+app.config['PDF_FOLDER'] = os.path.join(BASE_DIR, 'static/docs')
+
+for folder in [app.config['UPLOAD_FOLDER'], app.config['PDF_FOLDER']]:
+    os.makedirs(folder, exist_ok=True)
+
+# -----------------------------
+# BANCO
+# -----------------------------
+uri = os.environ.get('DATABASE_URL', 'sqlite:///database.db')
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = uri
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+# -----------------------------
+# MODELOS
+# -----------------------------
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
+
+class Member(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    role = db.Column(db.String(100))
+    lattes = db.Column(db.String(200))
+    photo = db.Column(db.String(500)) # Aumentado para suportar URLs longas
+
+class Equipment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    brand = db.Column(db.String(100))
+    model = db.Column(db.String(100))
+    purpose = db.Column(db.Text)
+    image = db.Column(db.String(500)) # Aumentado para suportar URLs longas
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    reserves = db.relationship('Reservation', backref='equipment', cascade="all, delete-orphan", lazy=True)
+
+class Reservation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
+    date = db.Column(db.String(50), nullable=False)
+    start_time = db.Column(db.String(50), nullable=False)
+    end_time = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(100))
+    institution = db.Column(db.String(150))
+    role = db.Column(db.String(100))
+    lattes = db.Column(db.String(200))
+    status = db.Column(db.String(20), default='Pendente')
+
+class Rule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+
+class LabSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    lab_name = db.Column(db.String(200), default="LABRIOS")
+    hero_text = db.Column(db.Text, default="Bem-vindo ao Laboratório.")
+    external_form_link = db.Column(db.String(300))
+    regimento_pdf = db.Column(db.String(500)) # Aumentado para suportar URLs longas
+
+# -----------------------------
+# LOGIN E AUXILIARES
+# -----------------------------
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+def get_settings():
+    settings = LabSettings.query.first()
+    if not settings:
+        settings = LabSettings()
+        db.session.add(settings)
+        db.session.commit()
+    return settings
+
+# -----------------------------
+# ROTAS PÚBLICAS
+# -----------------------------
+@app.route("/")
+def home():
+    return render_template("index.html", settings=get_settings())
+
+@app.route("/team")
+def team():
+    return render_template("team.html", members=Member.query.all(), settings=get_settings())
+
+@app.route("/how-to-use")
+def how_to_use():
+    return render_template("how_to_use.html", rules=Rule.query.all(), settings=get_settings())
+
+@app.route("/equipment")
+def equipment_list():
+    return render_template("equipment.html", equipments=Equipment.query.all(), settings=get_settings())
+
+@app.route("/reserve/<int:equipment_id>", methods=["GET", "POST"])
+def request_reservation(equipment_id):
+    equipment = Equipment.query.get_or_404(equipment_id)
+    if request.method == "POST":
+        new_res = Reservation(
+            equipment_id=equipment_id,
+            name=request.form.get("name"),
+            institution=request.form.get("institution"),
+            role=request.form.get("role"),
+            lattes=request.form.get("lattes"),
+            date=request.form.get("date"),
+            start_time=request.form.get("start_time"),
+            end_time=request.form.get("end_time"),
+            status='Pendente'
+        )
+        db.session.add(new_res)
+        db.session.commit()
+        flash("Solicitação enviada! Aguarde a aprovação do coordenador.", "info")
+        return redirect(url_for("equipment_list"))
+    return render_template("reserve.html", equipment=equipment, settings=get_settings())
+
+@app.route("/schedule")
+def schedule():
+    return render_template("schedule.html", settings=get_settings())
+
+@app.route('/api/events')
+def get_events():
+    reserves = Reservation.query.filter_by(status='Aprovado').all()
+    events = []
+    for r in reserves:
+        events.append({
+            'title': f"OCUPADO: {r.equipment.name}",
+            'start': r.date,
+            'color': '#000080',
+            'name': r.name,
+            'institution': r.institution,
+            'role': r.role
+        })
+    return jsonify(events)
+
+# -----------------------------
+# ADMINISTRAÇÃO
+# -----------------------------
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        user = User.query.filter_by(username=request.form.get("user")).first()
+        if user and user.password == request.form.get("password"):
+            login_user(user)
+            return redirect(url_for("admin_panel"))
+        flash("Credenciais inválidas.", "danger")
+    return render_template("login.html", settings=get_settings())
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("home"))
+
+@app.route("/admin")
+@login_required
+def admin_panel():
+    return render_template("admin.html",
+                           settings=get_settings(),
+                           rules=Rule.query.all(),
+                           members=Member.query.all(),
+                           equipments=Equipment.query.all(),
+                           pending_reservations=Reservation.query.filter_by(status='Pendente').all())
+
+@app.route("/admin/approve_reservation/<int:id>", methods=["POST"])
+@login_required
+def approve_reservation(id):
+    res = Reservation.query.get_or_404(id)
+    conflict = Reservation.query.filter(
+        Reservation.equipment_id == res.equipment_id,
+        Reservation.date == res.date,
+        Reservation.status == 'Aprovado',
+        Reservation.start_time < res.end_time,
+        Reservation.end_time > res.start_time
+    ).first()
+
+    if conflict:
+        flash("Conflito: Equipamento já reservado neste horário.", "danger")
+    else:
+        res.status = 'Aprovado'
+        db.session.commit()
+        flash("Reserva aprovada!", "success")
+    return redirect(url_for("admin_panel"))
+
+@app.route("/admin/reject_reservation/<int:id>", methods=["POST"])
+@login_required
+def reject_reservation(id):
+    res = Reservation.query.get_or_404(id)
+    db.session.delete(res)
+    db.session.commit()
+    flash("Solicitação recusada.", "warning")
+    return redirect(url_for("admin_panel"))
 
 @app.route("/admin/update_settings", methods=["POST"])
 @login_required
@@ -31,12 +234,21 @@ def update_settings():
     
     pdf = request.files.get("regimento")
     if pdf and pdf.filename != '':
-        # Upload de PDF como recurso bruto (raw) para o Cloudinary
+        # Implementação Cloudinary para PDF (recurso raw)
         upload_result = cloudinary.uploader.upload(pdf, resource_type="raw")
         s.regimento_pdf = upload_result['secure_url']
 
     db.session.commit()
     flash("Configurações salvas!", "success")
+    return redirect(url_for("admin_panel"))
+
+@app.route("/admin/delete_regimento", methods=["POST"])
+@login_required
+def delete_regimento():
+    s = get_settings()
+    s.regimento_pdf = None
+    db.session.commit()
+    flash("Regimento PDF excluído das configurações!", "warning")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_equipment", methods=["POST"])
@@ -45,7 +257,7 @@ def add_equipment():
     f = request.files.get('image')
     image_url = None
     if f and f.filename != '':
-        # Upload de imagem para o Cloudinary
+        # Implementação Cloudinary para Imagem
         upload_result = cloudinary.uploader.upload(f)
         image_url = upload_result['secure_url']
 
@@ -61,13 +273,21 @@ def add_equipment():
     flash("Equipamento cadastrado!", "success")
     return redirect(url_for("admin_panel"))
 
+@app.route("/admin/delete_equipment/<int:id>", methods=["POST"])
+@login_required
+def delete_equipment(id):
+    db.session.delete(Equipment.query.get_or_404(id))
+    db.session.commit()
+    flash("Equipamento removido.", "info")
+    return redirect(url_for("admin_panel"))
+
 @app.route("/admin/add_member", methods=["POST"])
 @login_required
 def add_member():
     f = request.files.get('photo')
     photo_url = None
     if f and f.filename != '':
-        # Upload de foto de membro para o Cloudinary
+        # Implementação Cloudinary para Foto
         upload_result = cloudinary.uploader.upload(f)
         photo_url = upload_result['secure_url']
 
@@ -80,3 +300,30 @@ def add_member():
     db.session.commit()
     flash("Membro adicionado!", "success")
     return redirect(url_for("admin_panel"))
+
+@app.route("/admin/delete_member/<int:id>", methods=["POST"])
+@login_required
+def delete_member(id):
+    db.session.delete(Member.query.get_or_404(id))
+    db.session.commit()
+    flash("Membro removido.", "info")
+    return redirect(url_for("admin_panel"))
+
+@app.route("/admin/add_rule", methods=["POST"])
+@login_required
+def add_rule():
+    content = request.form.get("content")
+    if content:
+        db.session.add(Rule(content=content))
+        db.session.commit()
+    return redirect(url_for("admin_panel"))
+
+@app.route("/admin/delete_rule/<int:id>", methods=["POST"])
+@login_required
+def delete_rule(id):
+    db.session.delete(Rule.query.get_or_404(id))
+    db.session.commit()
+    return redirect(url_for("admin_panel"))
+
+if __name__ == "__main__":
+    app.run(debug=True)

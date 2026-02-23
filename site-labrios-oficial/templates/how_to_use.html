@@ -1,34 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container">
-    <h1>Como Utilizar o Laboratório</h1>
-    <a href="{{ url_for('home') }}" class="btn secondary">Voltar</a>
+<h1>Como Utilizar o Laboratório</h1>
+Voltar </>
+<section>
+    <h2>Regras e Diretrizes</h2>
+    {% for r in rules %}
+    - {{ r.content }}
+    {% else %}
+    - Nenhuma regra cadastrada.
+    {% endfor %}
+</section>
+<section>
+    <h2>Documentação e Links</h2>
+    <hr>
+    {% if settings.external_form_link %}
+    Formulário Oficial de Uso
+    <{{ settings.external_form_link }}>
+    {% endif %}
 
-    <section>
-        <h2>Regras e Diretrizes</h2>
-        <ul>
-            {% for r in rules %}
-                <li>{{ r.content }}</li>
-            {% else %}
-                <li>Nenhuma regra cadastrada.</li>
-            {% endfor %}
-        </ul>
-    </section>
-
-    <section>
-        <h2>Documentação e Links</h2>
-        <hr>
-        {% if settings.external_form_link %}
-            <p><strong>Formulário Oficial de Uso:</strong></p>
-            <a href="{{ settings.external_form_link }}" target="_blank" class="btn">Acessar Formulário</a>
-        {% endif %}
-
-        {% if settings.regimento_pdf %}
-            <p><strong>Regimento Interno:</strong></p>
-            <a href="{{ settings.regimento_pdf }}" target="_blank" class="btn">Baixar Regimento (PDF)</a>
-        {% else %}
-            <p>Regimento em breve</p>
-        {% endif %}
-    </section>
-</div>
+    {% if settings.regimento_pdf %}
+    Baixar Regimento (PDF)
+    <a href="{{ settings.regimento_pdf }}" target="_blank">Clique aqui</a>
+    {% else %}
+    Regimento em breve
+    {% endif %}
+</section>
 {% endblock %}

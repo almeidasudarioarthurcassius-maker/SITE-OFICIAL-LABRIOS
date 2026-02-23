@@ -76,7 +76,7 @@ class LabSettings(db.Model):
     regimento_pdf = db.Column(db.String(100))
 
 # -----------------------------
-# LOGIN
+# LOGIN E AUXILIARES
 # -----------------------------
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -154,7 +154,7 @@ def get_events():
     return jsonify(events)
 
 # -----------------------------
-# ADMIN E GESTÃO
+# ADMINISTRAÇÃO
 # -----------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -194,7 +194,7 @@ def approve_reservation(id):
         Reservation.end_time > res.start_time
     ).first()
     if conflict:
-        flash("Impossibilidade de reserva: Conflito de horário para este equipamento.", "danger")
+        flash("Conflito: Equipamento já reservado neste horário.", "danger")
     else:
         res.status = 'Aprovado'
         db.session.commit()
@@ -207,7 +207,7 @@ def reject_reservation(id):
     res = Reservation.query.get_or_404(id)
     db.session.delete(res)
     db.session.commit()
-    flash("Solicitação removida.", "warning")
+    flash("Solicitação recusada.", "warning")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/update_settings", methods=["POST"])
@@ -232,9 +232,11 @@ def delete_regimento():
     s = get_settings()
     if s.regimento_pdf:
         path = os.path.join(app.config['PDF_FOLDER'], s.regimento_pdf)
-        if os.path.exists(path): os.remove(path)
+        if os.path.exists(path):
+            os.remove(path)
         s.regimento_pdf = None
         db.session.commit()
+        flash("Regimento PDF excluído com sucesso!", "warning")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_equipment", methods=["POST"])
@@ -249,6 +251,7 @@ def add_equipment():
         image=filename, quantity=request.form.get("quantity", type=int)
     ))
     db.session.commit()
+    flash("Equipamento cadastrado!", "success")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/delete_equipment/<int:id>", methods=["POST"])
@@ -256,6 +259,7 @@ def add_equipment():
 def delete_equipment(id):
     db.session.delete(Equipment.query.get_or_404(id))
     db.session.commit()
+    flash("Equipamento removido.", "info")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_member", methods=["POST"])
@@ -269,6 +273,7 @@ def add_member():
         lattes=request.form.get("lattes"), photo=filename
     ))
     db.session.commit()
+    flash("Membro adicionado!", "success")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/delete_member/<int:id>", methods=["POST"])
@@ -276,6 +281,7 @@ def add_member():
 def delete_member(id):
     db.session.delete(Member.query.get_or_404(id))
     db.session.commit()
+    flash("Membro removido.", "info")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_rule", methods=["POST"])

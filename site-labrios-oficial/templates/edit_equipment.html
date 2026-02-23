@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2 style="color: #000080;">Editar Equipamento: {{ e.name }}</h2>
+    <form action="{{ url_for('edit_equipment', id=e.id) }}" method="POST" enctype="multipart/form-data" style="max-width: 500px; margin-top: 20px;">
+        <label>Nome:</label><br><input type="text" name="name" value="{{ e.name }}" required style="width: 100%;"><br><br>
+        <label>Marca:</label><br><input type="text" name="brand" value="{{ e.brand }}" style="width: 100%;"><br><br>
+        <label>Modelo:</label><br><input type="text" name="model" value="{{ e.model }}" style="width: 100%;"><br><br>
+        <label>Quantidade:</label><br><input type="number" name="quantity" value="{{ e.quantity }}" style="width: 100%;"><br><br>
+        <label>Finalidade:</label><br><textarea name="purpose" style="width: 100%;">{{ e.purpose }}</textarea><br><br>
+        <label>Alterar Foto:</label><br><input type="file" name="image"><br><br>
+        <button type="submit" class="btn" style="background: #000080; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Salvar Alterações</button>
+        <a href="{{ url_for('admin_panel') }}" class="btn secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

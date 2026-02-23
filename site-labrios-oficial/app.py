@@ -210,7 +210,14 @@ def update_settings():
     s.external_form_link = request.form.get("form_link")
     pdf = request.files.get("regimento")
     if pdf and pdf.filename != '':
-        upload_result = cloudinary.uploader.upload(pdf, resource_type="raw", folder="labrios/docs")
+        # CORREÇÃO: Usando resource_type="auto" e forçando extensão PDF
+        upload_result = cloudinary.uploader.upload(
+            pdf, 
+            resource_type="auto", 
+            folder="labrios/docs",
+            public_id=f"regimento_{s.id}",
+            format="pdf"
+        )
         s.regimento_pdf = upload_result['secure_url']
     db.session.commit()
     flash("Configurações salvas!", "success")

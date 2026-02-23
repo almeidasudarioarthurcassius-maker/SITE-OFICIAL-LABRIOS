@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-   <div class="d-flex justify-content-between align-items-center mb-4">
-       <h2 class="fw-bold" style="color: var(--navy);">Equipamentos</h2>
-       <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">Voltar</a>
-   </div>
-   
+   <h2>Equipamentos</h2>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary mb-3">Voltar</a>
     <div class="table-responsive">
-        <table class="table table-hover align-middle shadow-sm">
+        <table class="table table-bordered align-middle">
             <thead class="table-dark">
                 <tr>
                    <th>Foto</th>
@@ -18,26 +15,28 @@
                    <th>Ação</th>
                </tr>
             </thead>
-            <tbody class="bg-white">
+            <tbody>
                 {% for e in equipments %}
                 <tr>
                    <td>
-                       {% if e.image %}
-                        <img src="{{ e.image }}" width="80" style="border-radius: 8px;">
-                       {% else %}
-                        <span class="text-muted small">Sem foto</span>
-                       {% endif %}
+                    {% if e.image %}<img src="{{ e.image }}" width="80" style="border-radius:5px;">
+                    {% else %}<span class="text-muted small">Sem foto</span>{% endif %}
                    </td>
                    <td><strong>{{ e.name }}</strong></td>
                    <td>{{ e.model }} / {{ e.brand }}</td>
-                   <td class="small">{{ e.purpose }}</td>
+                   <td>{{ e.purpose }}</td>
                    <td>{{ e.quantity }}</td>
                    <td>
-                       <a href="{{ url_for('request_reservation', equipment_id=e.id) }}" class="btn btn-primary btn-sm">Solicitar</a>
+                    <a href="{{ url_for('request_reservation', equipment_id=e.id) }}" class="btn btn-primary btn-sm">Solicitar</a>
+                    {% if current_user.is_authenticated %}
+                        <form action="{{ url_for('delete_equipment', id=e.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Excluir equipamento?')">
+                            <button class="btn btn-danger btn-sm">Excluir</button>
+                        </form>
+                    {% endif %}
                    </td>
                </tr>
                 {% else %}
-               <tr><td colspan="6" class="text-center">Nenhum equipamento cadastrado.</td></tr>
+               <tr><td colspan="6">Nenhum equipamento cadastrado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

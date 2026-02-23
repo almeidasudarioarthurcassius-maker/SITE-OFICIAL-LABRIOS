@@ -1,47 +1,42 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container">
-    <h1>Equipamentos</h1>
-    <a href="{{ url_for('home') }}" class="btn secondary">Voltar</a>
-
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>Foto</th>
-                <th>Nome</th>
-                <th>Modelo/Marca</th>
-                <th>Finalidade</th>
-                <th>Quantidade</th>
-                <th>Ação</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for e in equipments %}
-            <tr>
-                <td>
-                    {% if e.image %}
-                        <img src="{{ e.image }}" alt="{{ e.name }}" style="width: 80px; border-radius: 8px;">
-                    {% else %}
-                        Sem foto
-                    {% endif %}
-                </td>
-                <td><strong>{{ e.name }}</strong></td>
-                <td>{{ e.model }} / {{ e.brand }}</td>
-                <td>{{ e.purpose }}</td>
-                <td>{{ e.quantity }}</td>
-                <td>
-                    <a href="{{ url_for('request_reservation', equipment_id=e.id) }}" class="btn">Solicitar</a>
-                    {% if current_user.is_authenticated %}
-                        <form action="{{ url_for('delete_equipment', id=e.id) }}" method="POST" style="display:inline;">
-                            <button class="btn danger" onclick="return confirm('Excluir?')">Excluir</button>
-                        </form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="6">Nenhum equipamento cadastrado.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+<h1>Equipamentos</h1>
+Voltar <{{ url_for('home') }}>
+<table>
+    <thead>
+        <tr>
+            <th>Foto</th>
+            <th>Nome</th>
+            <th>Modelo/Marca</th>
+            <th>Finalidade</th>
+            <th>Quantidade</th>
+            <th>Ação</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in equipments %}
+        <tr>
+            <td>
+                {% if e.image %}
+                    <img src="{{ e.image }}" alt="{{ e.name }}" style="width: 80px;">
+                {% else %}Sem foto{% endif %}
+            </td>
+            <td>*{{ e.name }}*</td>
+            <td>{{ e.model }} / {{ e.brand }}</td>
+            <td>{{ e.purpose }}</td>
+            <td>{{ e.quantity }}</td>
+            <td>
+                Solicitar <{{ url_for('request_reservation', equipment_id=e.id) }}>
+                {% if current_user.is_authenticated %}
+                <form action="{{ url_for('delete_equipment', id=e.id) }}" method="POST" style="display:inline;">
+                    <button type="submit">Excluir</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">Nenhum equipamento cadastrado.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

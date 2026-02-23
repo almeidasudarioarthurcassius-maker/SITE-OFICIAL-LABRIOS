@@ -1,48 +1,124 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container">
-    <h1 style="color: #000080;">Painel Gestor</h1>
-    <hr>
-    
-    <section>
-        <h2 style="color: #000080;">Gerenciar Equipamentos</h2>
-        <table class="admin-table" style="width: 100%; border-collapse: collapse;">
-            <thead style="background: #000080; color: white;">
-                <tr>
-                    <th style="padding: 10px; border: 1px solid #ddd;">Nome</th>
-                    <th style="padding: 10px; border: 1px solid #ddd;">Marca/Modelo</th>
-                    <th style="padding: 10px; border: 1px solid #ddd;">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for e in equipments %}
-                <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">{{ e.name }}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">{{ e.brand }} / {{ e.model }}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
-                        <a href="{{ url_for('edit_equipment', id=e.id) }}" class="btn" style="background: #ffa500; color: white; padding: 5px; border-radius: 3px;">Editar</a>
-                        <form action="{{ url_for('delete_equipment', id=e.id) }}" method="POST" style="display:inline;">
-                            <button type="submit" class="btn danger" style="background: #ff0000; color: white; padding: 5px; border: none; border-radius: 3px;" onclick="return confirm('Excluir?')">Excluir</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Painel Gestor</h1>
+        <a href="{{ url_for('home') }}" class="btn btn-outline-primary">Visualizar Site</a>
+    </div>
 
-    <hr>
-    <section>
-        <h3>Cadastrar Novo Equipamento</h3>
-        <form action="{{ url_for('add_equipment') }}" method="POST" enctype="multipart/form-data">
-            <input type="text" name="name" placeholder="Nome" required>
-            <input type="text" name="brand" placeholder="Marca">
-            <input type="text" name="model" placeholder="Modelo">
-            <input type="number" name="quantity" placeholder="Qtd" value="1">
-            <textarea name="purpose" placeholder="Finalidade"></textarea>
-            <input type="file" name="image">
-            <button type="submit" class="btn">Cadastrar</button>
+    <div class="card p-3 shadow-sm mb-4">
+        <h3>Fila de Espera</h3>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Equipamento</th>
+                        <th>Pesquisador</th>
+                        <th>Instituição</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in pending_reservations %}
+                    <tr>
+                        <td>{{ res.equipment.name }}</td>
+                        <td>{{ res.name }}</td>
+                        <td>{{ res.institution }}</td>
+                        <td>
+                            <form action="{{ url_for('approve_reservation', id=res.id) }}" method="POST" style="display:inline;">
+                                <button class="btn btn-success btn-sm">Aprovar</button>
+                            </form>
+                            <form action="{{ url_for('reject_reservation', id=res.id) }}" method="POST" style="display:inline;">
+                                <button class="btn btn-danger btn-sm">Recusar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center">Nenhuma solicitação.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card p-3 shadow-sm h-100">
+               <h3>Configurações Gerais</h3>
+               <form action="{{ url_for('update_settings') }}" method="POST" enctype="multipart/form-data">
+                   <label>Nome do Laboratório</label>
+                   <input type="text" name="lab_name" class="form-control mb-2" value="{{ settings.lab_name }}">
+                   <label>Link do Formulário</label>
+                   <input type="text" name="form_link" class="form-control mb-2" value="{{ settings.external_form_link }}">
+                   <label>Texto de Boas-Vindas</label>
+                   <textarea name="hero_text" class="form-control mb-2">{{ settings.hero_text }}</textarea>
+                   <label>Atualizar Regimento (PDF)</label>
+                   <input type="file" name="regimento" class="form-control mb-2">
+                   <button type="submit" class="btn btn-primary w-100 mt-2">Salvar</button>
+               </form>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card p-3 shadow-sm h-100">
+               <h3>Gerenciar Equipamentos</h3>
+               <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#modalAddEquip">Novo Equipamento</button>
+               
+               <div style="max-height: 400px; overflow-y: auto;">
+                   {% for e in equipments %}
+                   <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                       <span>{{ e.name }} ({{ e.quantity }})</span>
+                       <div>
+                           <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ e.id }}">Editar</button>
+                           <form action="{{ url_for('delete_equipment', id=e.id) }}" method="POST" style="display:inline;">
+                               <button class="btn btn-sm btn-danger">x</button>
+                           </form>
+                       </div>
+                   </div>
+
+                   <div class="modal fade" id="editModal{{ e.id }}" tabindex="-1">
+                       <div class="modal-dialog">
+                           <form action="{{ url_for('edit_equipment', id=e.id) }}" method="POST" enctype="multipart/form-data" class="modal-content">
+                               <div class="modal-header"><h5>Editar {{ e.name }}</h5></div>
+                               <div class="modal-body">
+                                   <input type="text" name="name" class="form-control mb-2" value="{{ e.name }}" required>
+                                   <input type="text" name="brand" class="form-control mb-2" value="{{ e.brand }}">
+                                   <input type="text" name="model" class="form-control mb-2" value="{{ e.model }}">
+                                   <textarea name="purpose" class="form-control mb-2">{{ e.purpose }}</textarea>
+                                   <input type="number" name="quantity" class="form-control mb-2" value="{{ e.quantity }}">
+                                   <input type="file" name="image" class="form-control">
+                                   <small class="text-muted">Deixe em branco para manter a imagem atual.</small>
+                               </div>
+                               <div class="modal-footer">
+                                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                   <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                               </div>
+                           </form>
+                       </div>
+                   </div>
+                   {% endfor %}
+               </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAddEquip" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="{{ url_for('add_equipment') }}" method="POST" enctype="multipart/form-data" class="modal-content">
+            <div class="modal-header"><h5>Novo Equipamento</h5></div>
+            <div class="modal-body">
+                <input type="text" name="name" class="form-control mb-2" placeholder="Nome" required>
+                <input type="text" name="brand" class="form-control mb-2" placeholder="Marca">
+                <input type="text" name="model" class="form-control mb-2" placeholder="Modelo">
+                <textarea name="purpose" class="form-control mb-2" placeholder="Finalidade"></textarea>
+                <input type="number" name="quantity" class="form-control mb-2" value="1">
+                <input type="file" name="image" class="form-control">
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Cadastrar</button>
+            </div>
         </form>
-    </section>
+    </div>
 </div>
 {% endblock %}

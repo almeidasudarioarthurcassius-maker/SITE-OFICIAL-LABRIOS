@@ -1,56 +1,45 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="container mt-4">
-
-    <h2 class="mb-4">Equipamentos do Laboratório</h2>
-
-    <div class="row">
-        {% for equipamento in equipamentos %}
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100">
-
-                {% if equipamento.imagem_url %}
-                    <img src="{{ equipamento.imagem_url }}" 
-                         class="card-img-top"
-                         style="height: 250px; object-fit: cover;"
-                         alt="Imagem do equipamento">
+    <h2>Equipamentos</h2>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary mb-3">Voltar</a>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Foto</th>
+                    <th>Nome</th>
+                    <th>Modelo/Marca</th>
+                    <th>Finalidade</th>
+                    <th>Quantidade</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in equipments %}
+                <tr>
+                    <td>
+                        {% if e.image %}<img src="{{ url_for('static', filename='uploads/' + e.image) }}" width="80">
+                        {% else %}<span class="text-muted">Sem foto</span>{% endif %}
+                    </td>
+                    <td><strong>{{ e.name }}</strong></td>
+                    <td>{{ e.model }} / {{ e.brand }}</td>
+                    <td>{{ e.purpose }}</td>
+                    <td>{{ e.quantity }}</td>
+                    <td>
+                        <a href="{{ url_for('request_reservation', equipment_id=e.id) }}" class="btn btn-primary btn-sm">Solicitar</a>
+                        {% if current_user.is_authenticated %}
+                            <form action="{{ url_for('delete_equipment', id=e.id) }}" method="POST" style="display:inline;">
+                                <button class="btn btn-danger btn-sm">Excluir</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
                 {% else %}
-                    <img src="{{ url_for('static', filename='img/sem-imagem.png') }}"
-                         class="card-img-top"
-                         style="height: 250px; object-fit: cover;"
-                         alt="Sem imagem">
-                {% endif %}
-
-                <div class="card-body">
-                    <h5 class="card-title">{{ equipamento.nome }}</h5>
-                    <p class="card-text">{{ equipamento.descricao }}</p>
-
-                    {% if equipamento.pdf_url %}
-                        <a href="{{ equipamento.pdf_url }}" 
-                           target="_blank"
-                           class="btn btn-outline-primary btn-sm">
-                           Ver Manual (PDF)
-                        </a>
-                    {% endif %}
-                </div>
-
-                <div class="card-footer text-end">
-                    <a href="{{ url_for('editar_equipamento', id=equipamento.id) }}"
-                       class="btn btn-warning btn-sm">
-                       Editar
-                    </a>
-                    <a href="{{ url_for('excluir_equipamento', id=equipamento.id) }}"
-                       class="btn btn-danger btn-sm"
-                       onclick="return confirm('Tem certeza que deseja excluir?')">
-                       Excluir
-                    </a>
-                </div>
-
-            </div>
-        </div>
-        {% endfor %}
+                <tr><td colspan="6">Nenhum equipamento cadastrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-
 </div>
 {% endblock %}

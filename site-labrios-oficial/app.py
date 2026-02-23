@@ -2,7 +2,6 @@ import os
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from werkzeug.utils import secure_filename
 import cloudinary
 import cloudinary.uploader
 
@@ -13,14 +12,14 @@ app.secret_key = "labrios_master_key_2026"
 # CONFIGURAÇÃO CLOUDINARY
 # -----------------------------
 cloudinary.config(
-    cloud_name = "labrios-uplods", 
+    cloud_name = "dlwydwoz1", 
     api_key = "165575356491915", 
     api_secret = "3Dwwxqub3r-hbT2qkt2SDW0cgOI",
     secure = True
 )
 
 # -----------------------------
-# BANCO
+# BANCO DE DADOS
 # -----------------------------
 uri = os.environ.get('DATABASE_URL', 'sqlite:///database.db')
 if uri and uri.startswith("postgres://"):
@@ -223,7 +222,7 @@ def delete_regimento():
     s = get_settings()
     s.regimento_pdf = None
     db.session.commit()
-    flash("Regimento PDF excluído com sucesso!", "warning")
+    flash("Regimento PDF removido.", "warning")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_equipment", methods=["POST"])

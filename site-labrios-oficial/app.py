@@ -131,7 +131,7 @@ def request_reservation(equipment_id):
         )
         db.session.add(new_res)
         db.session.commit()
-        flash("Solicitação enviada! Aguarde a aprovação do coordenador.", "info")
+        flash("Solicitação enviada!", "info")
         return redirect(url_for("equipment_list"))
     return render_template("reserve.html", equipment=equipment, settings=get_settings())
 
@@ -208,15 +208,17 @@ def update_settings():
     s.lab_name = request.form.get("lab_name")
     s.hero_text = request.form.get("hero_text")
     s.external_form_link = request.form.get("form_link")
+    
     pdf = request.files.get("regimento")
     if pdf and pdf.filename != '':
-        # CORREÇÃO: Usando resource_type="auto" e forçando extensão PDF
+        # CORREÇÃO: Usando resource_type="raw" e public_id com extensão .pdf para entrega correta
         upload_result = cloudinary.uploader.upload(
             pdf, 
-            resource_type="auto", 
+            resource_type="raw", 
             folder="labrios/docs",
-            public_id=f"regimento_{s.id}",
-            format="pdf"
+            public_id="regimento_labrios.pdf",
+            use_filename=True,
+            unique_filename=False
         )
         s.regimento_pdf = upload_result['secure_url']
     db.session.commit()

@@ -6,141 +6,175 @@
         <a href="{{ url_for('home') }}" class="btn btn-outline-primary">Visualizar Site</a>
     </div>
 
-    <div class="card p-3 shadow-sm mb-4">
+    <div class="card p-3 shadow-sm mb-4 border-primary">
         <h3>Fila de Espera (Solicitações Pendentes)</h3>
         <div class="table-responsive">
             <table class="table table-sm">
-               <thead>
-                   <tr>
-                       <th>Equipamento</th>
-                       <th>Pesquisador</th>
-                       <th>Instituição</th>
-                       <th>Horário</th>
-                       <th>Lattes</th>
-                       <th>Ações</th>
-                   </tr>
-               </thead>
-               <tbody>
-                   {% for res in pending_reservations %}
-                   <tr>
-                       <td>{{ res.equipment.name }}</td>
-                       <td>{{ res.name }}</td>
-                       <td>{{ res.institution }}</td>
-                       <td>{{ res.date }} ({{ res.start_time }}-{{ res.end_time }})</td>
-                       <td><a href="{{ res.lattes }}" target="_blank">Ver</a></td>
-                       <td>
-                           <form action="{{ url_for('approve_reservation', id=res.id) }}" method="POST" style="display:inline;">
-                               <button class="btn btn-success btn-sm">Aprovar</button>
-                           </form>
-                           <form action="{{ url_for('reject_reservation', id=res.id) }}" method="POST" style="display:inline;">
-                               <button class="btn btn-danger btn-sm">Recusar</button>
-                           </form>
-                       </td>
-                   </tr>
-                   {% else %}
-                   <tr><td colspan="6" class="text-center">Nenhuma solicitação pendente.</td></tr>
-                   {% endfor %}
-               </tbody>
+              <thead>
+                  <tr>
+                    <th>Equipamento</th>
+                    <th>Pesquisador</th>
+                    <th>Instituição</th>
+                    <th>Horário</th>
+                    <th>Lattes</th>
+                    <th>Ações</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for res in pending_reservations %}
+                  <tr>
+                    <td>{{ res.equipment.name }}</td>
+                    <td>{{ res.name }}</td>
+                    <td>{{ res.institution }}</td>
+                    <td>{{ res.date }} ({{ res.start_time }}-{{ res.end_time }})</td>
+                    <td><a href="{{ res.lattes }}" target="_blank">Ver</a></td>
+                    <td>
+                        <form action="{{ url_for('approve_reservation', id=res.id) }}" method="POST" style="display:inline;">
+                            <button class="btn btn-success btn-sm">Aprovar</button>
+                        </form>
+                        <form action="{{ url_for('reject_reservation', id=res.id) }}" method="POST" style="display:inline;">
+                            <button class="btn btn-danger btn-sm">Recusar</button>
+                        </form>
+                    </td>
+                  </tr>
+                  {% else %}
+                  <tr><td colspan="6" class="text-center">Nenhuma solicitação pendente.</td></tr>
+                  {% endfor %}
+              </tbody>
             </table>
         </div>
     </div>
 
     <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card p-3 shadow-sm border-info">
+                <h3>Gerenciar Comitês (Gestor e Científico)</h3>
+                <form action="{{ url_for('add_committee') }}" method="POST" class="row g-2 mb-3">
+                    <div class="col-md-3"><input type="text" name="name" class="form-control" placeholder="Nome" required></div>
+                    <div class="col-md-3"><input type="text" name="role" class="form-control" placeholder="Função" required></div>
+                    <div class="col-md-3"><input type="url" name="lattes" class="form-control" placeholder="Link Lattes"></div>
+                    <div class="col-md-2">
+                        <select name="type" class="form-select">
+                            <option value="gestor">Comitê Gestor</option>
+                            <option value="cientifico">Comitê Científico</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1"><button type="submit" class="btn btn-info w-100 text-white">Add</button></div>
+                </form>
+                <div class="table-responsive" style="max-height: 250px;">
+                    <table class="table table-hover table-sm">
+                        <thead><tr><th>Nome</th><th>Cargo</th><th>Tipo</th><th>Ação</th></tr></thead>
+                        <tbody>
+                            {% for c in committee %}
+                            <tr>
+                                <td>{{ c.name }}</td>
+                                <td>{{ c.role }}</td>
+                                <td><span class="badge {% if c.committee_type == 'gestor' %}bg-primary{% else %}bg-secondary{% endif %}">{{ c.committee_type | upper }}</span></td>
+                                <td>
+                                    <form action="{{ url_for('delete_committee', id=c.id) }}" method="POST">
+                                        <button class="btn btn-sm text-danger"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div class="col-md-6 mb-4">
             <div class="card p-3 shadow-sm h-100">
-               <h3>Configurações Gerais</h3>
+              <h3>Configurações Gerais</h3>
                <form action="{{ url_for('update_settings') }}" method="POST" enctype="multipart/form-data">
-                   <label>Nome do Laboratório</label>
-                   <input type="text" name="lab_name" class="form-control mb-2" value="{{ settings.lab_name }}">
-                   <label>Link do Formulário de Reserva</label>
-                   <input type="text" name="form_link" class="form-control mb-2" value="{{ settings.external_form_link }}">
-                   <label>Texto de Boas-Vindas</label>
-                   <textarea name="hero_text" class="form-control mb-2">{{ settings.hero_text }}</textarea>
-                   <label>Atualizar Regimento (PDF no Banco)</label>
-                   <input type="file" name="regimento" class="form-control mb-2" accept=".pdf">
-                   <button type="submit" class="btn btn-primary w-100 mt-2">Salvar Alterações</button>
-               </form>
+                  <label>Nome do Laboratório</label>
+                  <input type="text" name="lab_name" class="form-control mb-2" value="{{ settings.lab_name }}">
+                  <label>Link do Formulário de Reserva</label>
+                  <input type="text" name="form_link" class="form-control mb-2" value="{{ settings.external_form_link }}">
+                  <label>Texto de Boas-Vindas</label>
+                  <textarea name="hero_text" class="form-control mb-2">{{ settings.hero_text }}</textarea>
+                  <label>Atualizar Regimento (PDF)</label>
+                  <input type="file" name="regimento" class="form-control mb-2" accept=".pdf">
+                  <button type="submit" class="btn btn-primary w-100 mt-2">Salvar Alterações</button>
+              </form>
                 {% if settings.regimento_data %}
                 <div class="mt-3 p-2 border rounded bg-light text-center">
-                   <p class="mb-1 small">Arquivo: {{ settings.regimento_filename }}</p>
-                   <form action="{{ url_for('delete_regimento') }}" method="POST">
-                       <button type="submit" class="btn btn-sm btn-outline-danger">Remover PDF</button>
-                   </form>
-                </div>
+                  <p class="mb-1 small">Arquivo: {{ settings.regimento_filename }}</p>
+                  <form action="{{ url_for('delete_regimento') }}" method="POST">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Remover PDF</button>
+                  </form>
+               </div>
                 {% endif %}
             </div>
         </div>
 
         <div class="col-md-6 mb-4">
             <div class="card p-3 shadow-sm h-100">
-               <h3>Equipamentos</h3>
-               <button class="btn btn-success w-100 mb-3" data-bs-toggle="modal" data-bs-target="#modalAddEquip">Novo Equipamento</button>
+              <h3>Equipamentos</h3>
+              <button class="btn btn-success w-100 mb-3" data-bs-toggle="modal" data-bs-target="#modalAddEquip">Novo Equipamento</button>
                <div style="max-height: 300px; overflow-y: auto;">
-                   {% for e in equipments %}
-                   <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                       <span>{{ e.name }}</span>
-                       <div>
-                           <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ e.id }}">Editar</button>
-                           <form action="{{ url_for('delete_equipment', id=e.id) }}" method="POST" style="display:inline;">
-                               <button class="btn btn-sm text-danger">x</button>
-                           </form>
-                       </div>
-                   </div>
-
-                   <div class="modal fade" id="editModal{{ e.id }}" tabindex="-1">
-                       <div class="modal-dialog">
-                           <form action="{{ url_for('edit_equipment', id=e.id) }}" method="POST" enctype="multipart/form-data" class="modal-content">
-                               <div class="modal-header"><h5>Editar {{ e.name }}</h5></div>
-                               <div class="modal-body text-start">
-                                   <input type="text" name="name" class="form-control mb-2" value="{{ e.name }}" required>
-                                   <input type="text" name="brand" class="form-control mb-2" value="{{ e.brand }}">
-                                   <input type="text" name="model" class="form-control mb-2" value="{{ e.model }}">
-                                   <textarea name="purpose" class="form-control mb-2">{{ e.purpose }}</textarea>
-                                   <input type="number" name="quantity" class="form-control mb-2" value="{{ e.quantity }}">
-                                   <label class="small">Alterar Imagem (Cloudinary):</label>
-                                   <input type="file" name="image" class="form-control">
-                               </div>
-                               <div class="modal-footer">
-                                   <button type="submit" class="btn btn-primary">Salvar</button>
-                               </div>
-                           </form>
-                       </div>
-                   </div>
-                   {% endfor %}
-               </div>
+                  {% for e in equipments %}
+                  <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <span>{{ e.name }}</span>
+                    <div>
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ e.id }}">Editar</button>
+                        <form action="{{ url_for('delete_equipment', id=e.id) }}" method="POST" style="display:inline;">
+                            <button class="btn btn-sm text-danger">x</button>
+                        </form>
+                    </div>
+                  </div>
+                  <div class="modal fade" id="editModal{{ e.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <form action="{{ url_for('edit_equipment', id=e.id) }}" method="POST" enctype="multipart/form-data" class="modal-content">
+                            <div class="modal-header"><h5>Editar {{ e.name }}</h5></div>
+                            <div class="modal-body text-start">
+                                <input type="text" name="name" class="form-control mb-2" value="{{ e.name }}" required>
+                                <input type="text" name="brand" class="form-control mb-2" value="{{ e.brand }}">
+                                <input type="text" name="model" class="form-control mb-2" value="{{ e.model }}">
+                                <textarea name="purpose" class="form-control mb-2">{{ e.purpose }}</textarea>
+                                <input type="number" name="quantity" class="form-control mb-2" value="{{ e.quantity }}">
+                                <label class="small">Alterar Imagem:</label>
+                                <input type="file" name="image" class="form-control">
+                            </div>
+                            <div class="modal-footer"><button type="submit" class="btn btn-primary">Salvar</button></div>
+                        </form>
+                    </div>
+                  </div>
+                  {% endfor %}
+              </div>
             </div>
         </div>
 
         <div class="col-md-6 mb-4">
             <div class="card p-3 shadow-sm">
-               <h3>Novo Membro</h3>
+              <h3>Novo Membro da Equipe</h3>
                <form action="{{ url_for('add_member') }}" method="POST" enctype="multipart/form-data">
-                   <input type="text" name="name" class="form-control mb-2" placeholder="Nome" required>
-                   <input type="text" name="role" class="form-control mb-2" placeholder="Função">
-                   <input type="text" name="lattes" class="form-control mb-2" placeholder="Link Lattes">
-                   <input type="file" name="photo" class="form-control mb-2">
-                   <button type="submit" class="btn btn-info w-100">Adicionar Membro</button>
-               </form>
+                  <input type="text" name="name" class="form-control mb-2" placeholder="Nome" required>
+                  <input type="text" name="role" class="form-control mb-2" placeholder="Função">
+                  <input type="text" name="lattes" class="form-control mb-2" placeholder="Link Lattes">
+                  <input type="file" name="photo" class="form-control mb-2">
+                  <button type="submit" class="btn btn-info w-100 text-white">Adicionar Membro</button>
+              </form>
             </div>
         </div>
 
         <div class="col-md-6 mb-4">
             <div class="card p-3 shadow-sm">
-               <h3>Regras e Diretrizes</h3>
+              <h3>Regras e Diretrizes</h3>
                <form action="{{ url_for('add_rule') }}" method="POST">
-                   <textarea name="content" class="form-control mb-2" placeholder="Texto da regra" required></textarea>
-                   <button type="submit" class="btn btn-secondary w-100">Adicionar Regra</button>
-               </form>
+                  <textarea name="content" class="form-control mb-2" placeholder="Texto da regra" required></textarea>
+                  <button type="submit" class="btn btn-secondary w-100">Adicionar Regra</button>
+              </form>
                 <div class="mt-3" style="max-height: 200px; overflow-y: auto;">
-                   {% for rule in rules %}
-                   <div class="d-flex justify-content-between align-items-center border-bottom py-1">
-                       <small>{{ rule.content[:50] }}...</small>
-                       <form action="{{ url_for('delete_rule', id=rule.id) }}" method="POST">
-                           <button class="btn btn-sm text-danger">x</button>
-                       </form>
-                   </div>
-                   {% endfor %}
-               </div>
+                  {% for rule in rules %}
+                  <div class="d-flex justify-content-between align-items-center border-bottom py-1">
+                    <small>{{ rule.content[:50] }}...</small>
+                    <form action="{{ url_for('delete_rule', id=rule.id) }}" method="POST">
+                        <button class="btn btn-sm text-danger">x</button>
+                    </form>
+                  </div>
+                  {% endfor %}
+              </div>
             </div>
         </div>
     </div>
@@ -151,16 +185,14 @@
         <form action="{{ url_for('add_equipment') }}" method="POST" enctype="multipart/form-data" class="modal-content">
             <div class="modal-header"><h5>Novo Equipamento</h5></div>
             <div class="modal-body">
-                <input type="text" name="name" class="form-control mb-2" placeholder="Nome" required>
-                <input type="text" name="brand" class="form-control mb-2" placeholder="Marca">
-                <input type="text" name="model" class="form-control mb-2" placeholder="Modelo">
-                <textarea name="purpose" class="form-control mb-2" placeholder="Finalidade"></textarea>
-                <input type="number" name="quantity" class="form-control mb-2" value="1">
-                <input type="file" name="image" class="form-control mb-2">
+               <input type="text" name="name" class="form-control mb-2" placeholder="Nome" required>
+               <input type="text" name="brand" class="form-control mb-2" placeholder="Marca">
+               <input type="text" name="model" class="form-control mb-2" placeholder="Modelo">
+               <textarea name="purpose" class="form-control mb-2" placeholder="Finalidade"></textarea>
+               <input type="number" name="quantity" class="form-control mb-2" value="1">
+               <input type="file" name="image" class="form-control mb-2">
             </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-success">Cadastrar</button>
-            </div>
+            <div class="modal-footer"><button type="submit" class="btn btn-success">Cadastrar</button></div>
         </form>
     </div>
 </div>

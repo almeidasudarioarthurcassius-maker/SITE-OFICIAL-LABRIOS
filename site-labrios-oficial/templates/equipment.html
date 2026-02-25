@@ -5,38 +5,44 @@
     <a href="/" class="btn btn-secondary btn-pill btn-sm">Voltar</a>
 </div>
 
-<div class="row row-cols-1 row-cols-md-3 g-4">
-    {% for e in equipments %}
-    <div class="col">
-        <div class="card h-100 shadow-sm text-center">
-            <div style="cursor: pointer;" onclick="expandImg('{{ e.image }}')">
-                <img src="{{ e.image if e.image else '#' }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Clique para ampliar">
-            </div>
-            <div class="card-body">
-                <h5 class="card-title">{{ e.name }}</h5>
-                <p class="card-text small text-muted">{{ e.brand }} - {{ e.model }}</p>
-                <p class="card-text">{{ e.purpose }}</p>
-                <a href="/reserve/{{ e.id }}" class="btn btn-primary btn-pill">Solicitar</a>
+<table class="table table-hover align-middle shadow-sm bg-white rounded">
+    <thead class="table-dark">
+        <tr><th>Foto</th><th>Nome</th><th>Marca/Modelo</th><th>Finalidade</th><th>Qtd</th><th>Ação</th></tr>
+    </thead>
+    <tbody>
+        {% for e in equipments %}
+        <tr>
+            <td>
+                {% if e.image %}
+                <img src="{{ e.image }}" width="80" class="rounded shadow-sm" style="cursor: zoom-in;" onclick="ampliar('{{ e.image }}')">
+                {% else %}Sem foto{% endif %}
+            </td>
+            <td><strong>{{ e.name }}</strong></td>
+            <td>{{ e.brand }} / {{ e.model }}</td>
+            <td><small>{{ e.purpose }}</small></td>
+            <td>{{ e.quantity }}</td>
+            <td>
+                <a href="/reserve/{{ e.id }}" class="btn btn-primary btn-pill btn-sm">Solicitar</a>
                 {% if current_user.is_authenticated %}
-                <form action="/admin/delete_equipment/{{ e.id }}" method="POST" class="mt-2">
-                    <button class="btn btn-danger btn-pill btn-sm">Excluir</button>
+                <form action="/admin/delete_equipment/{{ e.id }}" method="POST" class="d-inline ms-1">
+                    <button class="btn btn-danger btn-pill btn-sm">x</button>
                 </form>
                 {% endif %}
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-</div>
+            </td>
+        </tr>
+        {% else %}<tr><td colspan="6" class="text-center">Nenhum equipamento cadastrado.</td></tr>{% endfor %}
+    </tbody>
+</table>
 
-<!-- Modal de Ampliação -->
-<div id="imgModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.8); text-align:center;" onclick="this.style.display='none'">
-    <img id="modalImg" style="max-width:90%; max-height:90%; margin-top:5vh;">
+<!-- Overlay para ampliação -->
+<div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; text-align:center;" onclick="this.style.display='none'">
+    <img id="imgZoom" style="max-height:90%; max-width:90%; margin-top:5vh; border: 5px solid white;">
 </div>
 
 <script>
-function expandImg(url) {
-    document.getElementById('modalImg').src = url;
-    document.getElementById('imgModal').style.display = 'block';
+function ampliar(url) {
+    document.getElementById('imgZoom').src = url;
+    document.getElementById('overlay').style.display = 'block';
 }
 </script>
 {% endblock %}

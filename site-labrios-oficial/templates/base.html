@@ -10,8 +10,8 @@
         .navbar { background-color: #000080; }
         .nav-link, .navbar-brand { color: white !important; }
         .footer { background-color: #e9ecef; padding: 20px 0; border-top: 1px solid #dee2e6; margin-top: 50px; }
-        .btn-pill { border-radius: 50px; padding: 10px 25px; font-weight: bold; }
-        .hero-text { text-align: justify; font-family: 'Times New Roman', serif; line-height: 1.5; border-left: 4px solid #000080; padding-left: 20px; }
+        .btn-pill { border-radius: 50px; padding: 8px 20px; font-weight: bold; }
+        .hero-abnt { text-align: justify; font-family: 'Times New Roman', serif; line-height: 1.5; border-left: 4px solid #000080; padding-left: 20px; }
     </style>
 </head>
 <body>
@@ -25,19 +25,14 @@
                 <li class="nav-item"><a class="nav-link" href="/how-to-use">COMO USAR</a></li>
                 <li class="nav-item"><a class="nav-link" href="/equipment">EQUIPAMENTOS</a></li>
                 <li class="nav-item"><a class="nav-link" href="/team">EQUIPE</a></li>
-                {% if current_user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link text-warning" href="/admin">PAINEL GESTOR</a></li>
-                <li class="nav-item"><a class="nav-link" href="/logout">SAIR</a></li>
-                {% else %}
-                <li class="nav-item"><a class="nav-link" href="/login">LOGIN</a></li>
-                {% endif %}
+                {% if current_user.is_authenticated %}<li class="nav-item"><a class="nav-link text-warning fw-bold" href="/admin">PAINEL GESTOR</a></li><li class="nav-item"><a class="nav-link" href="/logout">SAIR</a></li>{% else %}<li class="nav-item"><a class="nav-link" href="/login">LOGIN</a></li>{% endif %}
             </ul>
         </div>
     </div>
 </nav>
 
 <div class="container mt-4">
-    {% with messages = get_flashed_messages() %}{% for m in messages %}<div class="alert alert-info">{{ m }}</div>{% endfor %}{% endwith %}
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert alert-{{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
     {% block content %}{% endblock %}
 </div>
 

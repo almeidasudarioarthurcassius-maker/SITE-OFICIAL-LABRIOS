@@ -44,13 +44,6 @@ class Member(db.Model):
     lattes = db.Column(db.String(200))
     photo = db.Column(db.String(255))
 
-class CommitteeMember(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    role = db.Column(db.String(100))
-    lattes = db.Column(db.String(200))
-    committee_type = db.Column(db.String(20)) # 'gestor' ou 'cientifico'
-
 class Equipment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -109,9 +102,7 @@ def get_settings():
 # -----------------------------
 @app.route("/")
 def home():
-    gestor = CommitteeMember.query.filter_by(committee_type='gestor').all()
-    cientifico = CommitteeMember.query.filter_by(committee_type='cientifico').all()
-    return render_template("index.html", settings=get_settings(), gestor=gestor, cientifico=cientifico)
+    return render_template("index.html", settings=get_settings())
 
 @app.route("/team")
 def team():
@@ -204,7 +195,6 @@ def admin_panel():
       settings=get_settings(),
       rules=Rule.query.all(),
       members=Member.query.all(),
-      committee=CommitteeMember.query.all(),
       equipments=Equipment.query.all(),
       pending_reservations=Reservation.query.filter_by(status='Pendente').all())
 
@@ -320,27 +310,6 @@ def delete_member(id):
     db.session.delete(Member.query.get_or_404(id))
     db.session.commit()
     flash("Membro removido.", "info")
-    return redirect(url_for("admin_panel"))
-
-@app.route("/admin/add_committee", methods=["POST"])
-@login_required
-def add_committee():
-    db.session.add(CommitteeMember(
-        name=request.form.get("name"),
-        role=request.form.get("role"),
-        lattes=request.form.get("lattes"),
-        committee_type=request.form.get("type")
-    ))
-    db.session.commit()
-    flash("Membro do comitê adicionado!", "success")
-    return redirect(url_for("admin_panel"))
-
-@app.route("/admin/delete_committee/<int:id>", methods=["POST"])
-@login_required
-def delete_committee(id):
-    db.session.delete(CommitteeMember.query.get_or_404(id))
-    db.session.commit()
-    flash("Membro do comitê removido.", "info")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_rule", methods=["POST"])

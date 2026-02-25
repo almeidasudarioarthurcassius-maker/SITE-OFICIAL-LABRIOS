@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.secret_key = "labrios_master_key_2026"
 
 # -----------------------------
-# CONFIGURAÇÃO CLOUDINARY
+# CONFIGURAÇÃO CLOUDINARY [6, 7]
 # -----------------------------
 cloudinary.config(
     cloud_name = "dlwydwoz1",
@@ -20,7 +20,7 @@ cloudinary.config(
 )
 
 # -----------------------------
-# BANCO DE DADOS
+# BANCO DE DADOS [7]
 # -----------------------------
 uri = os.environ.get('DATABASE_URL', 'sqlite:///database.db')
 if uri and uri.startswith("postgres://"):
@@ -30,7 +30,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # -----------------------------
-# MODELOS
+# MODELOS [8-11]
 # -----------------------------
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,8 +43,8 @@ class Member(db.Model):
     role = db.Column(db.String(100))
     lattes = db.Column(db.String(200))
     photo = db.Column(db.String(255))
-    # Nova coluna para distinguir os comitês
-    committee_type = db.Column(db.String(50), default="Equipe") 
+    # Campo adicionado para suportar Comitês [3]
+    category = db.Column(db.String(50), default="Equipe") 
 
 class Equipment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -81,7 +81,7 @@ class LabSettings(db.Model):
     regimento_filename = db.Column(db.String(255))
 
 # -----------------------------
-# LOGIN E AUXILIARES
+# LOGIN E AUXILIARES [11, 12]
 # -----------------------------
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -100,21 +100,20 @@ def get_settings():
     return settings
 
 # -----------------------------
-# ROTAS PÚBLICAS
+# ROTAS PÚBLICAS [12-15]
 # -----------------------------
 @app.route("/")
 def home():
-    # Carrega membros separados por comitê para a index
-    comite_gestor = Member.query.filter_by(committee_type='Gestor').all()
-    comite_cientifico = Member.query.filter_by(committee_type='Científico').all()
-    return render_template("index.html", 
-                           settings=get_settings(), 
-                           comite_gestor=comite_gestor, 
-                           comite_cientifico=comite_cientifico)
+    # Filtragem para os novos quadros da Index [3]
+    gestores = Member.query.filter_by(category="Gestor").all()
+    cientificos = Member.query.filter_by(category="Científico").all()
+    return render_template("index.html", settings=get_settings(), gestores=gestores, cientificos=cientificos)
 
 @app.route("/team")
 def team():
-    return render_template("team.html", members=Member.query.filter_by(committee_type='Equipe').all(), settings=get_settings())
+    # Mantém a exibição da equipe técnica geral [16]
+    members = Member.query.filter_by(category="Equipe").all()
+    return render_template("team.html", members=members, settings=get_settings())
 
 @app.route("/how-to-use")
 def how_to_use():
@@ -126,12 +125,7 @@ def download_regimento():
     if not s.regimento_data:
         flash("Arquivo não disponível.", "warning")
         return redirect(url_for("how_to_use"))
-    return send_file(
-        io.BytesIO(s.regimento_data),
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name=s.regimento_filename or "Regimento_LABRIOS.pdf"
-    )
+    return send_file(io.BytesIO(s.regimento_data), mimetype='application/pdf', as_attachment=True, download_name=s.regimento_filename or "Regimento_LABRIOS.pdf")
 
 @app.route("/equipment")
 def equipment_list():
@@ -149,12 +143,11 @@ def request_reservation(equipment_id):
             lattes=request.form.get("lattes"),
             date=request.form.get("date"),
             start_time=request.form.get("start_time"),
-            end_time=request.form.get("end_time"),
-            status='Pendente'
+            end_time=request.form.get("end_time")
         )
         db.session.add(new_res)
         db.session.commit()
-        flash("Solicitação enviada! Aguarde a aprovação do coordenador.", "info")
+        flash("Solicitação enviada!", "info")
         return redirect(url_for("equipment_list"))
     return render_template("reserve.html", equipment=equipment, settings=get_settings())
 
@@ -165,20 +158,11 @@ def schedule():
 @app.route('/api/events')
 def get_events():
     reserves = Reservation.query.filter_by(status='Aprovado').all()
-    events = []
-    for r in reserves:
-        events.append({
-            'title': f"OCUPADO: {r.equipment.name}",
-            'start': r.date,
-            'color': '#000080',
-            'name': r.name,
-            'institution': r.institution,
-            'role': r.role
-        })
+    events = [{'title': f"OCUPADO: {r.equipment.name}", 'start': r.date, 'color': '#000080'} for r in reserves]
     return jsonify(events)
 
 # -----------------------------
-# ADMINISTRAÇÃO
+# ADMINISTRAÇÃO [17-26]
 # -----------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -212,7 +196,6 @@ def approve_reservation(id):
     res = Reservation.query.get_or_404(id)
     res.status = 'Aprovado'
     db.session.commit()
-    flash("Reserva aprovada!", "success")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/reject_reservation/<int:id>", methods=["POST"])
@@ -221,7 +204,6 @@ def reject_reservation(id):
     res = Reservation.query.get_or_404(id)
     db.session.delete(res)
     db.session.commit()
-    flash("Solicitação recusada.", "warning")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/update_settings", methods=["POST"])
@@ -236,7 +218,6 @@ def update_settings():
         s.regimento_data = pdf.read()
         s.regimento_filename = pdf.filename
     db.session.commit()
-    flash("Configurações salvas!", "success")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/delete_regimento", methods=["POST"])
@@ -246,7 +227,6 @@ def delete_regimento():
     s.regimento_data = None
     s.regimento_filename = None
     db.session.commit()
-    flash("Regimento removido.", "warning")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_equipment", methods=["POST"])
@@ -257,16 +237,8 @@ def add_equipment():
     if f and f.filename != '':
         upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
         img_url = upload_result['secure_url']
-    db.session.add(Equipment(
-        name=request.form.get("name"),
-        brand=request.form.get("brand"),
-        model=request.form.get("model"),
-        purpose=request.form.get("purpose"),
-        image=img_url,
-        quantity=request.form.get("quantity", type=int)
-    ))
+    db.session.add(Equipment(name=request.form.get("name"), brand=request.form.get("brand"), model=request.form.get("model"), purpose=request.form.get("purpose"), image=img_url, quantity=request.form.get("quantity", type=int)))
     db.session.commit()
-    flash("Equipamento cadastrado!", "success")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/edit_equipment/<int:id>", methods=["POST"])
@@ -283,7 +255,6 @@ def edit_equipment(id):
         upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
         e.image = upload_result['secure_url']
     db.session.commit()
-    flash("Equipamento atualizado!", "success")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/delete_equipment/<int:id>", methods=["POST"])
@@ -291,7 +262,6 @@ def edit_equipment(id):
 def delete_equipment(id):
     db.session.delete(Equipment.query.get_or_404(id))
     db.session.commit()
-    flash("Equipamento removido.", "info")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_member", methods=["POST"])
@@ -303,14 +273,28 @@ def add_member():
         upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
         img_url = upload_result['secure_url']
     db.session.add(Member(
-        name=request.form.get("name"),
-        role=request.form.get("role"),
-        lattes=request.form.get("lattes"),
+        name=request.form.get("name"), 
+        role=request.form.get("role"), 
+        lattes=request.form.get("lattes"), 
         photo=img_url,
-        committee_type=request.form.get("committee_type") # Recebe o tipo do comitê
+        category=request.form.get("category", "Equipe")
     ))
     db.session.commit()
-    flash("Membro adicionado!", "success")
+    return redirect(url_for("admin_panel"))
+
+@app.route("/admin/edit_member/<int:id>", methods=["POST"])
+@login_required
+def edit_member(id):
+    m = Member.query.get_or_404(id)
+    m.name = request.form.get("name")
+    m.role = request.form.get("role")
+    m.lattes = request.form.get("lattes")
+    m.category = request.form.get("category")
+    f = request.files.get('photo')
+    if f and f.filename != '':
+        upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
+        m.photo = upload_result['secure_url']
+    db.session.commit()
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/delete_member/<int:id>", methods=["POST"])
@@ -318,7 +302,6 @@ def add_member():
 def delete_member(id):
     db.session.delete(Member.query.get_or_404(id))
     db.session.commit()
-    flash("Membro removido.", "info")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_rule", methods=["POST"])

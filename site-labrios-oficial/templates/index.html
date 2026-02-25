@@ -1,20 +1,66 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="hero">
-    <h1>LABRIOS</h1>
-    <h2>{{ settings.lab_name }}</h2>
-    <p>{{ settings.hero_text }}</p>
-    <div class="main-buttons">
-        <a href="{{ url_for('how_to_use') }}" class="btn">AGENDAMENTO</a>
-        <a href="{{ url_for('schedule') }}" class="btn">CALENDÁRIO DE UTILIZAÇÃO</a>
-        <a href="{{ url_for('equipment_list') }}" class="btn">EQUIPAMENTOS</a>
-        <a href="{{ url_for('team') }}" class="btn">EQUIPE</a>
-    </div>
-</section>
+<div class="text-center mb-5">
+    <h1 class="display-4 fw-bold" style="color: #000080;">LABRIOS</h1>
+    <h4 class="text-secondary">{{ settings.lab_name }}</h4>
+</div>
 
-<section class="links">
-    <h3>VÍNCULOS INSTITUCIONAIS</h3>
-    <a href="https://dirlab.uea.edu.br/publico/view/58/" target="_blank">Dirlab (UEA)</a>
-    <a href="https://pnipe.mcti.gov.br/laboratory/31271" target="_blank">PNIPE (MCTI)</a>
-</section>
+<div class="container mb-5" style="text-align: justify; font-family: 'Times New Roman', serif; line-height: 1.5; border-left: 4px solid #000080; padding-left: 20px;">
+    {{ settings.hero_text }}
+</div>
+
+<div class="row g-3 text-center mb-5">
+    <div class="col-md-3"><a href="/how-to-use" class="btn btn-outline-primary w-100 py-3 fw-bold">REGRAS DE USO</a></div>
+    <div class="col-md-3"><a href="/schedule" class="btn btn-outline-primary w-100 py-3 fw-bold">CALENDÁRIO DE UTILIZAÇÃO</a></div>
+    <div class="col-md-3"><a href="/equipment" class="btn btn-outline-primary w-100 py-3 fw-bold">EQUIPAMENTOS E AGENDAMENTO</a></div>
+    <div class="col-md-3"><a href="/team" class="btn btn-outline-primary w-100 py-3 fw-bold">EQUIPE</a></div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-6">
+        <h3 class="border-bottom pb-2">COMITÊ GESTOR</h3>
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr><th>Foto</th><th>Nome</th><th>Lattes</th></tr>
+            </thead>
+            <tbody>
+                {% for m in gestor %}
+                <tr>
+                    <td><img src="{{ m.photo if m.photo else '#' }}" width="50" class="rounded-circle"></td>
+                    <td>{{ m.name }}</td>
+                    <td><a href="{{ m.lattes }}" target="_blank" class="btn btn-sm btn-link">Ver Link</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if settings.committee_doc_link %}
+        <div class="text-end">
+            <a href="{{ settings.committee_doc_link }}" target="_blank" class="btn btn-sm btn-dark">Documento do Comitê Gestor</a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        <h3 class="border-bottom pb-2">COMITÊ DE USUÁRIOS</h3>
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr><th>Foto</th><th>Nome</th><th>Lattes</th></tr>
+            </thead>
+            <tbody>
+                {% for m in usuarios %}
+                <tr>
+                    <td><img src="{{ m.photo if m.photo else '#' }}" width="50" class="rounded-circle"></td>
+                    <td>{{ m.name }}</td>
+                    <td><a href="{{ m.lattes }}" target="_blank" class="btn btn-sm btn-link">Ver Link</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-5 text-center p-4 bg-white rounded shadow-sm">
+    <h5 class="mb-3 fw-bold text-muted">VÍNCULOS INSTITUCIONAIS</h5>
+    <a href="https://dirlab.uea.edu.br/publico/view/58/" target="_blank" class="btn btn-primary pill-button mx-2">Dirlab (UEA)</a>
+    <a href="https://pnipe.mcti.gov.br/laboratory/31271" target="_blank" class="btn btn-primary pill-button mx-2">PNIPE (MCTI)</a>
+</div>
 {% endblock %}

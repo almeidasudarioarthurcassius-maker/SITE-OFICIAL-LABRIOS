@@ -2,69 +2,92 @@
 {% block content %}
 <h2 class="mb-4">Painel Gestor</h2>
 
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-primary text-white">Configurações Gerais e PDF</div>
+<div class="card mb-4 shadow-sm border-primary">
+    <div class="card-header bg-primary text-white">Configurações do Site e PDF</div>
     <div class="card-body">
         <form action="/admin/update_settings" method="POST" enctype="multipart/form-data">
-            <input type="text" name="lab_name" class="form-control mb-2" value="{{ settings.lab_name }}" placeholder="Nome do Laboratório">
-            <textarea name="hero_text" class="form-control mb-2" rows="3" placeholder="Texto de Boas-Vindas">{{ settings.hero_text }}</textarea>
-            <input type="text" name="form_link" class="form-control mb-2" value="{{ settings.external_form_link }}" placeholder="Link do Formulário">
-            <input type="text" name="committee_doc" class="form-control mb-2" value="{{ settings.committee_doc_link }}" placeholder="Link Documento Comitê">
-            <label class="small">Atualizar Regimento (PDF):</label>
+            <label class="small">Nome do Laboratório</label>
+            <input type="text" name="lab_name" class="form-control mb-2" value="{{ settings.lab_name }}">
+            <label class="small">Texto ABNT de Boas-Vindas</label>
+            <textarea name="hero_text" class="form-control mb-2" rows="3">{{ settings.hero_text }}</textarea>
+            <label class="small">Link Formulário de Reserva</label>
+            <input type="text" name="form_link" class="form-control mb-2" value="{{ settings.external_form_link }}">
+            <label class="small">Link Documento Comitê Gestor</label>
+            <input type="text" name="committee_doc" class="form-control mb-2" value="{{ settings.committee_doc_link }}">
+            <label class="small">Atualizar Regimento (PDF)</label>
             <input type="file" name="regimento" class="form-control mb-2">
-            <button class="btn btn-primary btn-pill btn-sm">Salvar Alterações</button>
+            <button class="btn btn-primary btn-pill">Salvar Alterações</button>
         </form>
         {% if settings.regimento_data %}
         <form action="/admin/delete_regimento" method="POST" class="mt-2">
-            <button class="btn btn-danger btn-pill btn-sm">Remover PDF Cadastrado</button>
+            <button class="btn btn-danger btn-pill btn-sm">Remover PDF do Banco</button>
         </form>
         {% endif %}
     </div>
 </div>
 
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-dark text-white">Adicionar Novo Recurso</div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-4">
-                <h6>Membro da Equipe</h6>
-                <form action="/admin/add_member" method="POST" enctype="multipart/form-data">
+<div class="row">
+    <!-- CADASTROS -->
+    <div class="col-md-6">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-dark text-white">Cadastrar Membros</div>
+            <div class="card-body">
+                <h6>Equipe do Lab</h6>
+                <form action="/admin/add_member" method="POST" enctype="multipart/form-data" class="mb-4">
                     <input type="text" name="name" class="form-control mb-1" placeholder="Nome" required>
                     <input type="text" name="role" class="form-control mb-1" placeholder="Função">
-                    <input type="text" name="lattes" class="form-control mb-1" placeholder="Link Lattes">
+                    <input type="text" name="lattes" class="form-control mb-1" placeholder="Lattes">
                     <input type="file" name="photo" class="form-control mb-1">
-                    <button class="btn btn-success btn-sm btn-pill w-100">Adicionar Membro</button>
+                    <button class="btn btn-success btn-sm btn-pill">Adicionar Membro Equipe</button>
+                </form>
+                <h6>Comitês (Gestor ou Usuários)</h6>
+                <form action="/admin/add_committee" method="POST" enctype="multipart/form-data">
+                    <input type="text" name="name" class="form-control mb-1" placeholder="Nome" required>
+                    <input type="text" name="lattes" class="form-control mb-1" placeholder="Lattes">
+                    <select name="category" class="form-control mb-1">
+                        <option value="Gestor">Comitê Gestor</option>
+                        <option value="Usuário">Comitê de Usuários</option>
+                    </select>
+                    <input type="file" name="photo" class="form-control mb-1">
+                    <button class="btn btn-success btn-sm btn-pill">Adicionar ao Comitê</button>
                 </form>
             </div>
-            <div class="col-md-4">
-                <h6>Equipamento</h6>
-                <form action="/admin/add_equipment" method="POST" enctype="multipart/form-data">
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-dark text-white">Cadastrar Equipamento e Regras</div>
+            <div class="card-body">
+                <h6>Novo Equipamento</h6>
+                <form action="/admin/add_equipment" method="POST" enctype="multipart/form-data" class="mb-4">
                     <input type="text" name="name" class="form-control mb-1" placeholder="Nome" required>
                     <input type="text" name="brand" class="form-control mb-1" placeholder="Marca">
                     <input type="text" name="model" class="form-control mb-1" placeholder="Modelo">
                     <textarea name="purpose" class="form-control mb-1" placeholder="Finalidade"></textarea>
-                    <input type="number" name="quantity" class="form-control mb-1" placeholder="Qtd" value="1">
+                    <input type="number" name="quantity" class="form-control mb-1" placeholder="Quantidade" value="1">
                     <input type="file" name="image" class="form-control mb-1">
-                    <button class="btn btn-success btn-sm btn-pill w-100">Adicionar Equipamento</button>
+                    <button class="btn btn-success btn-sm btn-pill">Cadastrar Equipamento</button>
                 </form>
-            </div>
-            <div class="col-md-4">
-                <h6>Regra de Uso</h6>
+                <h6>Nova Regra</h6>
                 <form action="/admin/add_rule" method="POST">
-                    <textarea name="content" class="form-control mb-1" placeholder="Texto da Regra"></textarea>
-                    <button class="btn btn-success btn-sm btn-pill w-100">Adicionar Regra</button>
+                    <textarea name="content" class="form-control mb-1" placeholder="Texto da regra"></textarea>
+                    <button class="btn btn-success btn-sm btn-pill">Adicionar Regra</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-header bg-secondary text-white">Gerenciar Itens (Excluir)</div>
+<div class="card shadow-sm border-secondary mb-5">
+    <div class="card-header bg-secondary text-white">Gestão de Conteúdo (Editar/Excluir)</div>
     <div class="card-body">
-        <p class="small text-muted">Para editar ou excluir informações específicas, navegue até as abas EQUIPE ou EQUIPAMENTOS no menu superior.</p>
-        <a href="/team" class="btn btn-outline-dark btn-pill btn-sm">Ver Equipe</a>
-        <a href="/equipment" class="btn btn-outline-dark btn-pill btn-sm">Ver Equipamentos</a>
+        <p class="text-muted">Para excluir ou editar itens específicos, navegue pelo menu superior para as abas <strong>EQUIPE</strong>, <strong>EQUIPAMENTOS</strong> ou <strong>COMO USAR</strong>.</p>
+        <div class="d-flex gap-2">
+            <a href="/team" class="btn btn-outline-dark btn-pill btn-sm">Gerenciar Equipe</a>
+            <a href="/equipment" class="btn btn-outline-dark btn-pill btn-sm">Gerenciar Equipamentos</a>
+            <a href="/how-to-use" class="btn btn-outline-dark btn-pill btn-sm">Gerenciar Regras</a>
+        </div>
     </div>
 </div>
 {% endblock %}

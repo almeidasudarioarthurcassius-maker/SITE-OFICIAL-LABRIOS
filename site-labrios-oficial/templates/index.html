@@ -1,78 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
-
-<section class="hero-section text-center py-5">
-    <div class="container">
-        <h1 class="display-4 fw-bold">LABRIOS</h1>
-        <p class="lead">{{ settings.lab_name }}</p>
-        <hr class="my-4" style="border-color: #000080;">
-        <p>{{ settings.hero_text }}</p>
-        
-        <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
-            <!-- BOTÕES RENOMEADOS CONFORME SOLICITAÇÃO -->
-            <a href="{{ url_for('how_to_use') }}" class="btn btn-primary btn-lg px-4">AGENDAMENTO</a>
-            <a href="{{ url_for('schedule') }}" class="btn btn-outline-primary btn-lg px-4">CALENDÁRIO DE UTILIZAÇÃO</a>
-            <a href="{{ url_for('equipment_list') }}" class="btn btn-dark btn-lg px-4">EQUIPAMENTOS</a>
-            <a href="{{ url_for('team') }}" class="btn btn-secondary btn-lg px-4">EQUIPE</a>
-        </div>
+<section class="hero">
+    <h1>LABRIOS</h1>
+    <h2>{{ settings.lab_name }}</h2>
+    <p>{{ settings.hero_text }}</p>
+    <div class="main-buttons">
+        <a href="{{ url_for('how_to_use') }}" class="btn">AGENDAMENTO</a>
+        <a href="{{ url_for('schedule') }}" class="btn">CALENDÁRIO DE UTILIZAÇÃO</a>
+        <a href="{{ url_for('equipment_list') }}" class="btn">EQUIPAMENTOS</a>
+        <a href="{{ url_for('team') }}" class="btn">EQUIPE</a>
     </div>
 </section>
 
-<!-- SEÇÃO DOS COMITÊS -->
-<div class="container my-5">
-    <div class="row">
-        <!-- QUADRO COMITÊ GESTOR -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 border-primary">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">COMITÊ GESTOR</h3>
-                </div>
-                <div class="card-body">
-                    {% for m in comite_gestor %}
-                    <div class="mb-3 border-bottom pb-2">
-                        <strong>{{ m.name }}</strong><br>
-                        <small class="text-muted">{{ m.role }}</small><br>
-                        {% if m.lattes %}
-                        <a href="{{ m.lattes }}" target="_blank" class="btn btn-sm btn-link p-0">Link Lattes</a>
-                        {% endif %}
-                    </div>
-                    {% else %}
-                    <p class="text-muted">Nenhum membro cadastrado.</p>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
-        <!-- QUADRO COMITÊ CIENTÍFICO -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 border-info">
-                <div class="card-header bg-info text-white">
-                    <h3 class="mb-0">COMITÊ CIENTÍFICO</h3>
-                </div>
-                <div class="card-body">
-                    {% for m in comite_cientifico %}
-                    <div class="mb-3 border-bottom pb-2">
-                        <strong>{{ m.name }}</strong><br>
-                        <small class="text-muted">{{ m.role }}</small><br>
-                        {% if m.lattes %}
-                        <a href="{{ m.lattes }}" target="_blank" class="btn btn-sm btn-link p-0">Link Lattes</a>
-                        {% endif %}
-                    </div>
-                    {% else %}
-                    <p class="text-muted">Nenhum membro cadastrado.</p>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container text-center py-5">
-    <h4 class="mb-4">VÍNCULOS INSTITUCIONAIS</h4>
-    <div class="d-flex justify-content-center gap-4">
-        <a href="https://dirlab.uea.edu.br/publico/view/58/" target="_blank">Dirlab (UEA)</a>
-        <a href="https://pnipe.mcti.gov.br/laboratory/31271" target="_blank">PNIPE (MCTI)</a>
-    </div>
-</div>
-
+<section class="links">
+    <h3>VÍNCULOS INSTITUCIONAIS</h3>
+    <a href="https://dirlab.uea.edu.br/publico/view/58/" target="_blank">Dirlab (UEA)</a>
+    <a href="https://pnipe.mcti.gov.br/laboratory/31271" target="_blank">PNIPE (MCTI)</a>
+</section>
 {% endblock %}

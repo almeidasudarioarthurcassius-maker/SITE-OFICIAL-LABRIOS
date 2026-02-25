@@ -3,82 +3,68 @@
 <h2 class="mb-4">Painel Gestor</h2>
 
 <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-primary text-white">Solicitações Pendentes</div>
-    <div class="card-body">
-        <table class="table">
-            <thead>
-                <tr><th>Equipamento</th><th>Pesquisador</th><th>Data</th><th>Ações</th></tr>
-            </thead>
-            <tbody>
-                {% for res in pending_reservations %}
-                <tr>
-                    <td>{{ res.equipment.name }}</td>
-                    <td>{{ res.name }}</td>
-                    <td>{{ res.date }}</td>
-                    <td>
-                        <form action="{{ url_for('approve_reservation', id=res.id) }}" method="POST" class="d-inline">
-                            <button class="btn btn-success btn-sm">Aprovar</button>
-                        </form>
-                        <form action="{{ url_for('reject_reservation', id=res.id) }}" method="POST" class="d-inline">
-                            <button class="btn btn-danger btn-sm">Recusar</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-secondary text-white">Configurações do Site</div>
+    <div class="card-header bg-primary text-white">Configurações Gerais e PDF</div>
     <div class="card-body">
         <form action="/admin/update_settings" method="POST" enctype="multipart/form-data">
-            <div class="mb-3"><label>Nome do Lab</label><input type="text" name="lab_name" class="form-control" value="{{ settings.lab_name }}"></div>
-            <div class="mb-3"><label>Texto de Boas-Vindas</label><textarea name="hero_text" class="form-control" rows="4">{{ settings.hero_text }}</textarea></div>
-            <div class="mb-3"><label>Link do Formulário de Reserva</label><input type="text" name="form_link" class="form-control" value="{{ settings.external_form_link }}"></div>
-            <div class="mb-3"><label>Link do Documento Comitê Gestor</label><input type="text" name="committee_doc" class="form-control" value="{{ settings.committee_doc_link }}"></div>
-            <div class="mb-3"><label>Regimento (PDF)</label><input type="file" name="regimento" class="form-control"></div>
-            <button class="btn btn-primary">Salvar Alterações</button>
+            <input type="text" name="lab_name" class="form-control mb-2" value="{{ settings.lab_name }}" placeholder="Nome do Laboratório">
+            <textarea name="hero_text" class="form-control mb-2" rows="3" placeholder="Texto de Boas-Vindas">{{ settings.hero_text }}</textarea>
+            <input type="text" name="form_link" class="form-control mb-2" value="{{ settings.external_form_link }}" placeholder="Link do Formulário">
+            <input type="text" name="committee_doc" class="form-control mb-2" value="{{ settings.committee_doc_link }}" placeholder="Link Documento Comitê">
+            <label class="small">Atualizar Regimento (PDF):</label>
+            <input type="file" name="regimento" class="form-control mb-2">
+            <button class="btn btn-primary btn-pill btn-sm">Salvar Alterações</button>
         </form>
+        {% if settings.regimento_data %}
+        <form action="/admin/delete_regimento" method="POST" class="mt-2">
+            <button class="btn btn-danger btn-pill btn-sm">Remover PDF Cadastrado</button>
+        </form>
+        {% endif %}
     </div>
 </div>
 
 <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-dark text-white">Adicionar Membro do Comitê</div>
+    <div class="card-header bg-dark text-white">Adicionar Novo Recurso</div>
     <div class="card-body">
-        <form action="/admin/add_committee" method="POST" enctype="multipart/form-data">
-            <input type="text" name="name" placeholder="Nome" class="form-control mb-2" required>
-            <input type="text" name="lattes" placeholder="Link Lattes" class="form-control mb-2">
-            <select name="category" class="form-control mb-2">
-                <option value="Gestor">Comitê Gestor</option>
-                <option value="Usuário">Comitê de Usuários</option>
-            </select>
-            <input type="file" name="photo" class="form-control mb-2">
-            <button class="btn btn-success">Cadastrar Membro de Comitê</button>
-        </form>
-        <hr>
-        <table class="table table-sm">
-            {% for m in committee_members %}
-            <tr>
-                <td>{{ m.name }} ({{ m.category }})</td>
-                <td>
-                    <form action="{{ url_for('delete_committee', id=m.id) }}" method="POST" class="d-inline">
-                        <button class="btn btn-sm btn-danger">Excluir</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+        <div class="row">
+            <div class="col-md-4">
+                <h6>Membro da Equipe</h6>
+                <form action="/admin/add_member" method="POST" enctype="multipart/form-data">
+                    <input type="text" name="name" class="form-control mb-1" placeholder="Nome" required>
+                    <input type="text" name="role" class="form-control mb-1" placeholder="Função">
+                    <input type="text" name="lattes" class="form-control mb-1" placeholder="Link Lattes">
+                    <input type="file" name="photo" class="form-control mb-1">
+                    <button class="btn btn-success btn-sm btn-pill w-100">Adicionar Membro</button>
+                </form>
+            </div>
+            <div class="col-md-4">
+                <h6>Equipamento</h6>
+                <form action="/admin/add_equipment" method="POST" enctype="multipart/form-data">
+                    <input type="text" name="name" class="form-control mb-1" placeholder="Nome" required>
+                    <input type="text" name="brand" class="form-control mb-1" placeholder="Marca">
+                    <input type="text" name="model" class="form-control mb-1" placeholder="Modelo">
+                    <textarea name="purpose" class="form-control mb-1" placeholder="Finalidade"></textarea>
+                    <input type="number" name="quantity" class="form-control mb-1" placeholder="Qtd" value="1">
+                    <input type="file" name="image" class="form-control mb-1">
+                    <button class="btn btn-success btn-sm btn-pill w-100">Adicionar Equipamento</button>
+                </form>
+            </div>
+            <div class="col-md-4">
+                <h6>Regra de Uso</h6>
+                <form action="/admin/add_rule" method="POST">
+                    <textarea name="content" class="form-control mb-1" placeholder="Texto da Regra"></textarea>
+                    <button class="btn btn-success btn-sm btn-pill w-100">Adicionar Regra</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-dark text-white">Equipamentos e Membros da Equipe</div>
+<div class="card shadow-sm">
+    <div class="card-header bg-secondary text-white">Gerenciar Itens (Excluir)</div>
     <div class="card-body">
-        <p>Utilize as abas <strong>EQUIPE</strong> e <strong>EQUIPAMENTOS</strong> no menu para remover itens individualmente após logado.</p>
-        <a href="/equipment" class="btn btn-outline-dark btn-sm">Ir para Equipamentos</a>
-        <a href="/team" class="btn btn-outline-dark btn-sm">Ir para Equipe</a>
+        <p class="small text-muted">Para editar ou excluir informações específicas, navegue até as abas EQUIPE ou EQUIPAMENTOS no menu superior.</p>
+        <a href="/team" class="btn btn-outline-dark btn-pill btn-sm">Ver Equipe</a>
+        <a href="/equipment" class="btn btn-outline-dark btn-pill btn-sm">Ver Equipamentos</a>
     </div>
 </div>
 {% endblock %}

@@ -5,9 +5,7 @@
     <h4 class="text-secondary">{{ settings.lab_name }}</h4>
 </div>
 
-<div class="hero-text mb-5">
-    {{ settings.hero_text }}
-</div>
+<div class="hero-abnt mb-5">{{ settings.hero_text }}</div>
 
 <div class="row g-3 text-center mb-5">
     <div class="col-md-3"><a href="/how-to-use" class="btn btn-outline-primary btn-pill w-100">REGRAS DE USO</a></div>
@@ -20,7 +18,7 @@
     <div class="col-md-6">
         <h3 class="border-bottom pb-2">COMITÊ GESTOR</h3>
         <table class="table table-hover align-middle">
-            <thead><tr><th>Foto</th><th>Nome</th><th>Lattes</th></tr></thead>
+            <thead class="table-light"><tr><th>Foto</th><th>Nome</th><th>Lattes</th></tr></thead>
             <tbody>
                 {% for m in gestor %}
                 <tr>
@@ -38,7 +36,7 @@
     <div class="col-md-6">
         <h3 class="border-bottom pb-2">COMITÊ DE USUÁRIOS</h3>
         <table class="table table-hover align-middle">
-            <thead><tr><th>Foto</th><th>Nome</th><th>Lattes</th></tr></thead>
+            <thead class="table-light"><tr><th>Foto</th><th>Nome</th><th>Lattes</th></tr></thead>
             <tbody>
                 {% for m in usuarios %}
                 <tr>

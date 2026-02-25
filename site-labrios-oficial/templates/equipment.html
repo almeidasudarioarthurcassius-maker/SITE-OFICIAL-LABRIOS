@@ -1,45 +1,42 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-4">
-   <h2>Equipamentos</h2>
-    <a href="{{ url_for('home') }}" class="btn btn-secondary mb-3">Voltar</a>
-    <div class="table-responsive">
-        <table class="table table-bordered align-middle">
-            <thead class="table-dark">
-                <tr>
-                   <th>Foto</th>
-                   <th>Nome</th>
-                   <th>Modelo/Marca</th>
-                   <th>Finalidade</th>
-                   <th>Quantidade</th>
-                   <th>Ação</th>
-               </tr>
-            </thead>
-            <tbody>
-                {% for e in equipments %}
-                <tr>
-                   <td>
-                    {% if e.image %}<img src="{{ e.image }}" width="80" style="border-radius:5px;">
-                    {% else %}<span class="text-muted small">Sem foto</span>{% endif %}
-                   </td>
-                   <td><strong>{{ e.name }}</strong></td>
-                   <td>{{ e.model }} / {{ e.brand }}</td>
-                   <td>{{ e.purpose }}</td>
-                   <td>{{ e.quantity }}</td>
-                   <td>
-                    <a href="{{ url_for('request_reservation', equipment_id=e.id) }}" class="btn btn-primary btn-sm">Solicitar</a>
-                    {% if current_user.is_authenticated %}
-                        <form action="{{ url_for('delete_equipment', id=e.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Excluir equipamento?')">
-                            <button class="btn btn-danger btn-sm">Excluir</button>
-                        </form>
-                    {% endif %}
-                   </td>
-               </tr>
-                {% else %}
-               <tr><td colspan="6">Nenhum equipamento cadastrado.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Equipamentos</h2>
+    <a href="/" class="btn btn-secondary btn-pill btn-sm">Voltar</a>
 </div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for e in equipments %}
+    <div class="col">
+        <div class="card h-100 shadow-sm text-center">
+            <div style="cursor: pointer;" onclick="expandImg('{{ e.image }}')">
+                <img src="{{ e.image if e.image else '#' }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Clique para ampliar">
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ e.name }}</h5>
+                <p class="card-text small text-muted">{{ e.brand }} - {{ e.model }}</p>
+                <p class="card-text">{{ e.purpose }}</p>
+                <a href="/reserve/{{ e.id }}" class="btn btn-primary btn-pill">Solicitar</a>
+                {% if current_user.is_authenticated %}
+                <form action="/admin/delete_equipment/{{ e.id }}" method="POST" class="mt-2">
+                    <button class="btn btn-danger btn-pill btn-sm">Excluir</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modal de Ampliação -->
+<div id="imgModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.8); text-align:center;" onclick="this.style.display='none'">
+    <img id="modalImg" style="max-width:90%; max-height:90%; margin-top:5vh;">
+</div>
+
+<script>
+function expandImg(url) {
+    document.getElementById('modalImg').src = url;
+    document.getElementById('imgModal').style.display = 'block';
+}
+</script>
 {% endblock %}

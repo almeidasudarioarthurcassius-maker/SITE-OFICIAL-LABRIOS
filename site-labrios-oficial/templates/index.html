@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="text-align: center; padding: 50px 20px; background: #f0f4f8;">
-    <h1 style="color: #000080; font-size: 3rem; margin-bottom: 10px;">LABRIOS</h1>
+<div style="text-align: center; padding: 40px; background: #f0f4f8;">
+    <h1 style="color: #000080;">LABRIOS</h1>
     <h2 style="color: #333;">{{ settings.lab_name }}</h2>
-    <p style="max-width: 800px; margin: 20px auto; line-height: 1.6;">{{ settings.hero_text }}</p>
+    <p style="max-width: 800px; margin: auto;">{{ settings.hero_text }}</p>
     
-    <div style="margin-top: 30px;">
+    <div style="margin-top: 20px;">
         <a href="{{ url_for('how_to_use') }}" class="btn-main">AGENDAMENTO</a>
         <a href="{{ url_for('schedule') }}" class="btn-main">CALENDÁRIO DE UTILIZAÇÃO</a>
         <a href="{{ url_for('equipment_list') }}" class="btn-main">EQUIPAMENTOS</a>
@@ -13,52 +13,43 @@
     </div>
 </div>
 
-<div class="container" style="margin-top: 40px;">
-    <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
-        <!-- Quadro Comitê Gestor -->
-        <div style="flex: 1; min-width: 300px; border: 2px solid #000080; border-radius: 10px; overflow: hidden;">
-            <div style="background: #000080; color: white; padding: 10px; text-align: center; font-weight: bold;">COMITÊ GESTOR</div>
-            <div style="padding: 15px;">
+<div class="container" style="display: flex; gap: 20px; justify-content: center; padding: 20px; flex-wrap: wrap;">
+    <!-- QUADRO COMITÊ GESTOR [2] -->
+    <div style="flex: 1; min-width: 300px; border: 2px solid #000080; border-radius: 8px; overflow: hidden;">
+        <div style="background: #000080; color: white; padding: 10px; text-align: center; font-weight: bold;">COMITÊ GESTOR</div>
+        <div style="padding: 10px;">
+            <table style="width: 100%; border-collapse: collapse;">
                 {% for m in gestores %}
-                    <div style="border-bottom: 1px solid #ddd; padding: 10px 0;">
-                        <strong>{{ m.name }}</strong><br>
-                        <small>{{ m.role }}</small> | <a href="{{ m.lattes }}" target="_blank">Lattes</a>
-                    </div>
-                {% else %}
-                    <p style="text-align: center;">Nenhum membro cadastrado.</p>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 5px;">
+                        <strong>{{ m.name }}</strong><br><small>{{ m.role }}</small>
+                    </td>
+                    <td style="text-align: right;"><a href="{{ m.lattes }}" target="_blank" style="color: #000080;">Lattes</a></td>
+                </tr>
                 {% endfor %}
-            </div>
+            </table>
         </div>
+    </div>
 
-        <!-- Quadro Comitê Científico -->
-        <div style="flex: 1; min-width: 300px; border: 2px solid #000080; border-radius: 10px; overflow: hidden;">
-            <div style="background: #000080; color: white; padding: 10px; text-align: center; font-weight: bold;">COMITÊ CIENTÍFICO</div>
-            <div style="padding: 15px;">
+    <!-- QUADRO COMITÊ CIENTIFICO [2] -->
+    <div style="flex: 1; min-width: 300px; border: 2px solid #000080; border-radius: 8px; overflow: hidden;">
+        <div style="background: #000080; color: white; padding: 10px; text-align: center; font-weight: bold;">COMITÊ CIENTIFICO</div>
+        <div style="padding: 10px;">
+            <table style="width: 100%; border-collapse: collapse;">
                 {% for m in cientificos %}
-                    <div style="border-bottom: 1px solid #ddd; padding: 10px 0;">
-                        <strong>{{ m.name }}</strong><br>
-                        <small>{{ m.role }}</small> | <a href="{{ m.lattes }}" target="_blank">Lattes</a>
-                    </div>
-                {% else %}
-                    <p style="text-align: center;">Nenhum membro cadastrado.</p>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 5px;">
+                        <strong>{{ m.name }}</strong><br><small>{{ m.role }}</small>
+                    </td>
+                    <td style="text-align: right;"><a href="{{ m.lattes }}" target="_blank" style="color: #000080;">Lattes</a></td>
+                </tr>
                 {% endfor %}
-            </div>
+            </table>
         </div>
     </div>
 </div>
 
 <style>
-    .btn-main {
-        display: inline-block;
-        padding: 15px 25px;
-        margin: 10px;
-        background: #000080;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-        transition: 0.3s;
-    }
-    .btn-main:hover { background: #0000cd; }
+    .btn-main { display: inline-block; padding: 15px 25px; margin: 10px; background: #000080; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
 </style>
 {% endblock %}

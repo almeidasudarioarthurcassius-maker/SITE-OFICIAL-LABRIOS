@@ -25,7 +25,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# MODELOS [3-6]
+# MODELOS
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -80,7 +80,7 @@ class LabSettings(db.Model):
     regimento_data = db.Column(db.LargeBinary)
     regimento_filename = db.Column(db.String(255))
 
-# LOGIN
+# LOGIN E AUXILIARES
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
@@ -154,15 +154,10 @@ def get_events():
     reserves = Reservation.query.filter_by(status='Aprovado').all()
     events = []
     for r in reserves:
-        events.append({
-            'id': r.id,
-            'title': f"OCUPADO: {r.equipment.name}",
-            'start': r.date,
-            'color': '#000080'
-        })
+        events.append({'title': f"OCUPADO: {r.equipment.name}", 'start': r.date, 'color': '#000080'})
     return jsonify(events)
 
-# ADMINISTRAÇÃO [7-15]
+# ADMINISTRAÇÃO
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -196,6 +191,7 @@ def approve_reservation(id):
     res = Reservation.query.get_or_404(id)
     res.status = 'Aprovado'
     db.session.commit()
+    flash("Reserva aprovada!", "success")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/reject_reservation/<int:id>", methods=["POST"])
@@ -204,6 +200,7 @@ def reject_reservation(id):
     res = Reservation.query.get_or_404(id)
     db.session.delete(res)
     db.session.commit()
+    flash("Solicitação removida.", "warning")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/update_settings", methods=["POST"])
@@ -249,6 +246,7 @@ def add_equipment():
         quantity=request.form.get("quantity", type=int)
     ))
     db.session.commit()
+    flash("Equipamento cadastrado!", "success")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/delete_equipment/<int:id>", methods=["POST"])
@@ -256,6 +254,7 @@ def add_equipment():
 def delete_equipment(id):
     db.session.delete(Equipment.query.get_or_404(id))
     db.session.commit()
+    flash("Equipamento removido.", "info")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_member", methods=["POST"])
@@ -268,6 +267,7 @@ def add_member():
         img_url = upload_result['secure_url']
     db.session.add(Member(name=request.form.get("name"), role=request.form.get("role"), lattes=request.form.get("lattes"), photo=img_url))
     db.session.commit()
+    flash("Membro adicionado!", "success")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/delete_member/<int:id>", methods=["POST"])
@@ -275,6 +275,7 @@ def add_member():
 def delete_member(id):
     db.session.delete(Member.query.get_or_404(id))
     db.session.commit()
+    flash("Membro removido.", "info")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_committee", methods=["POST"])
@@ -287,6 +288,7 @@ def add_committee():
         img_url = upload_result['secure_url']
     db.session.add(CommitteeMember(name=request.form.get("name"), lattes=request.form.get("lattes"), photo=img_url, category=request.form.get("category")))
     db.session.commit()
+    flash("Membro de comitê adicionado!", "success")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/delete_committee/<int:id>", methods=["POST"])
@@ -294,6 +296,7 @@ def add_committee():
 def delete_committee(id):
     db.session.delete(CommitteeMember.query.get_or_404(id))
     db.session.commit()
+    flash("Membro de comitê removido.", "info")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_rule", methods=["POST"])

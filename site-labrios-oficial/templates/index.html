@@ -1,55 +1,78 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="text-align: center; padding: 40px; background: #f0f4f8;">
-    <h1 style="color: #000080;">LABRIOS</h1>
-    <h2 style="color: #333;">{{ settings.lab_name }}</h2>
-    <p style="max-width: 800px; margin: auto;">{{ settings.hero_text }}</p>
-    
-    <div style="margin-top: 20px;">
-        <a href="{{ url_for('how_to_use') }}" class="btn-main">AGENDAMENTO</a>
-        <a href="{{ url_for('schedule') }}" class="btn-main">CALENDÁRIO DE UTILIZAÇÃO</a>
-        <a href="{{ url_for('equipment_list') }}" class="btn-main">EQUIPAMENTOS</a>
-        <a href="{{ url_for('team') }}" class="btn-main">EQUIPE</a>
+
+<section class="hero-section text-center py-5">
+    <div class="container">
+        <h1 class="display-4 fw-bold">LABRIOS</h1>
+        <p class="lead">{{ settings.lab_name }}</p>
+        <hr class="my-4" style="border-color: #000080;">
+        <p>{{ settings.hero_text }}</p>
+        
+        <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+            <!-- BOTÕES RENOMEADOS CONFORME SOLICITAÇÃO -->
+            <a href="{{ url_for('how_to_use') }}" class="btn btn-primary btn-lg px-4">AGENDAMENTO</a>
+            <a href="{{ url_for('schedule') }}" class="btn btn-outline-primary btn-lg px-4">CALENDÁRIO DE UTILIZAÇÃO</a>
+            <a href="{{ url_for('equipment_list') }}" class="btn btn-dark btn-lg px-4">EQUIPAMENTOS</a>
+            <a href="{{ url_for('team') }}" class="btn btn-secondary btn-lg px-4">EQUIPE</a>
+        </div>
+    </div>
+</section>
+
+<!-- SEÇÃO DOS COMITÊS -->
+<div class="container my-5">
+    <div class="row">
+        <!-- QUADRO COMITÊ GESTOR -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">COMITÊ GESTOR</h3>
+                </div>
+                <div class="card-body">
+                    {% for m in comite_gestor %}
+                    <div class="mb-3 border-bottom pb-2">
+                        <strong>{{ m.name }}</strong><br>
+                        <small class="text-muted">{{ m.role }}</small><br>
+                        {% if m.lattes %}
+                        <a href="{{ m.lattes }}" target="_blank" class="btn btn-sm btn-link p-0">Link Lattes</a>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Nenhum membro cadastrado.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- QUADRO COMITÊ CIENTÍFICO -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-info">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">COMITÊ CIENTÍFICO</h3>
+                </div>
+                <div class="card-body">
+                    {% for m in comite_cientifico %}
+                    <div class="mb-3 border-bottom pb-2">
+                        <strong>{{ m.name }}</strong><br>
+                        <small class="text-muted">{{ m.role }}</small><br>
+                        {% if m.lattes %}
+                        <a href="{{ m.lattes }}" target="_blank" class="btn btn-sm btn-link p-0">Link Lattes</a>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Nenhum membro cadastrado.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="container" style="display: flex; gap: 20px; justify-content: center; padding: 20px; flex-wrap: wrap;">
-    <!-- QUADRO COMITÊ GESTOR [2] -->
-    <div style="flex: 1; min-width: 300px; border: 2px solid #000080; border-radius: 8px; overflow: hidden;">
-        <div style="background: #000080; color: white; padding: 10px; text-align: center; font-weight: bold;">COMITÊ GESTOR</div>
-        <div style="padding: 10px;">
-            <table style="width: 100%; border-collapse: collapse;">
-                {% for m in gestores %}
-                <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 5px;">
-                        <strong>{{ m.name }}</strong><br><small>{{ m.role }}</small>
-                    </td>
-                    <td style="text-align: right;"><a href="{{ m.lattes }}" target="_blank" style="color: #000080;">Lattes</a></td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-    </div>
-
-    <!-- QUADRO COMITÊ CIENTIFICO [2] -->
-    <div style="flex: 1; min-width: 300px; border: 2px solid #000080; border-radius: 8px; overflow: hidden;">
-        <div style="background: #000080; color: white; padding: 10px; text-align: center; font-weight: bold;">COMITÊ CIENTIFICO</div>
-        <div style="padding: 10px;">
-            <table style="width: 100%; border-collapse: collapse;">
-                {% for m in cientificos %}
-                <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 5px;">
-                        <strong>{{ m.name }}</strong><br><small>{{ m.role }}</small>
-                    </td>
-                    <td style="text-align: right;"><a href="{{ m.lattes }}" target="_blank" style="color: #000080;">Lattes</a></td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
+<div class="container text-center py-5">
+    <h4 class="mb-4">VÍNCULOS INSTITUCIONAIS</h4>
+    <div class="d-flex justify-content-center gap-4">
+        <a href="https://dirlab.uea.edu.br/publico/view/58/" target="_blank">Dirlab (UEA)</a>
+        <a href="https://pnipe.mcti.gov.br/laboratory/31271" target="_blank">PNIPE (MCTI)</a>
     </div>
 </div>
 
-<style>
-    .btn-main { display: inline-block; padding: 15px 25px; margin: 10px; background: #000080; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
-</style>
 {% endblock %}

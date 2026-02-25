@@ -75,6 +75,7 @@ class LabSettings(db.Model):
     lab_name = db.Column(db.String(200), default="LABRIOS")
     hero_text = db.Column(db.Text, default="Bem-vindo ao Laboratório.")
     external_form_link = db.Column(db.String(300))
+    # Alterado para armazenar o binário do PDF e o nome do arquivo
     regimento_data = db.Column(db.LargeBinary)
     regimento_filename = db.Column(db.String(255))
 
@@ -192,11 +193,11 @@ def logout():
 @login_required
 def admin_panel():
     return render_template("admin.html",
-      settings=get_settings(),
-      rules=Rule.query.all(),
-      members=Member.query.all(),
-      equipments=Equipment.query.all(),
-      pending_reservations=Reservation.query.filter_by(status='Pendente').all())
+       settings=get_settings(),
+       rules=Rule.query.all(),
+       members=Member.query.all(),
+       equipments=Equipment.query.all(),
+       pending_reservations=Reservation.query.filter_by(status='Pendente').all())
 
 @app.route("/admin/approve_reservation/<int:id>", methods=["POST"])
 @login_required
@@ -223,9 +224,10 @@ def update_settings():
     s.lab_name = request.form.get("lab_name")
     s.hero_text = request.form.get("hero_text")
     s.external_form_link = request.form.get("form_link")
+    
     pdf = request.files.get("regimento")
     if pdf and pdf.filename != '':
-        s.regimento_data = pdf.read()
+        s.regimento_data = pdf.read() # Salva o binário no PostgreSQL
         s.regimento_filename = pdf.filename
     db.session.commit()
     flash("Configurações salvas!", "success")
@@ -249,13 +251,14 @@ def add_equipment():
     if f and f.filename != '':
         upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
         img_url = upload_result['secure_url']
+    
     db.session.add(Equipment(
-      name=request.form.get("name"),
-      brand=request.form.get("brand"),
-      model=request.form.get("model"),
-      purpose=request.form.get("purpose"),
-      image=img_url, 
-      quantity=request.form.get("quantity", type=int)
+       name=request.form.get("name"),
+       brand=request.form.get("brand"),
+       model=request.form.get("model"),
+       purpose=request.form.get("purpose"),
+       image=img_url, 
+       quantity=request.form.get("quantity", type=int)
     ))
     db.session.commit()
     flash("Equipamento cadastrado!", "success")
@@ -270,10 +273,12 @@ def edit_equipment(id):
     e.model = request.form.get("model")
     e.purpose = request.form.get("purpose")
     e.quantity = request.form.get("quantity", type=int)
+    
     f = request.files.get('image')
     if f and f.filename != '':
         upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
         e.image = upload_result['secure_url']
+        
     db.session.commit()
     flash("Equipamento atualizado!", "success")
     return redirect(url_for("admin_panel"))
@@ -281,10 +286,10 @@ def edit_equipment(id):
 @app.route("/admin/delete_equipment/<int:id>", methods=["POST"])
 @login_required
 def delete_equipment(id):
-    db.session.delete(Equipment.query.get_or_404(id))
-    db.session.commit()
-    flash("Equipamento removido.", "info")
-    return redirect(url_for("admin_panel"))
+   db.session.delete(Equipment.query.get_or_404(id))
+   db.session.commit()
+   flash("Equipamento removido.", "info")
+   return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_member", methods=["POST"])
 @login_required
@@ -294,11 +299,12 @@ def add_member():
     if f and f.filename != '':
         upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
         img_url = upload_result['secure_url']
+        
     db.session.add(Member(
-      name=request.form.get("name"),
-      role=request.form.get("role"),
-      lattes=request.form.get("lattes"), 
-      photo=img_url
+       name=request.form.get("name"),
+       role=request.form.get("role"),
+       lattes=request.form.get("lattes"), 
+       photo=img_url
     ))
     db.session.commit()
     flash("Membro adicionado!", "success")
@@ -307,26 +313,26 @@ def add_member():
 @app.route("/admin/delete_member/<int:id>", methods=["POST"])
 @login_required
 def delete_member(id):
-    db.session.delete(Member.query.get_or_404(id))
-    db.session.commit()
-    flash("Membro removido.", "info")
-    return redirect(url_for("admin_panel"))
+   db.session.delete(Member.query.get_or_404(id))
+   db.session.commit()
+   flash("Membro removido.", "info")
+   return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_rule", methods=["POST"])
 @login_required
 def add_rule():
     content = request.form.get("content")
     if content:
-      db.session.add(Rule(content=content))
-      db.session.commit()
+       db.session.add(Rule(content=content))
+       db.session.commit()
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/delete_rule/<int:id>", methods=["POST"])
 @login_required
 def delete_rule(id):
-    db.session.delete(Rule.query.get_or_404(id))
-    db.session.commit()
-    return redirect(url_for("admin_panel"))
+   db.session.delete(Rule.query.get_or_404(id))
+   db.session.commit()
+   return redirect(url_for("admin_panel"))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+   app.run(debug=True)

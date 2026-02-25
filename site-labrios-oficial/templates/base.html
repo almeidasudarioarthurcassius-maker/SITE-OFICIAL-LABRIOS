@@ -11,7 +11,6 @@
         body { display: flex; flex-direction: column; min-height: 100vh; }
         .content-wrapper { flex: 1; }
         .navbar { background: var(--navy) !important; border-bottom: 3px solid #f1c40f; }
-        .bg-navy { background-color: var(--navy) !important; }
         .btn-navy { background: var(--navy); color: white; }
         .btn-navy:hover { background: #000050; color: white; }
         footer { border-top: 1px solid #eee; padding: 2rem 0; font-size: 0.85rem; color: #777; background: #f9f9f9; }
@@ -22,9 +21,11 @@
 <nav class="navbar navbar-expand-lg navbar-dark shadow sticky-top">
     <div class="container">
         <a class="navbar-brand fw-bold" href="/">LABRIOS</a>
+        
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="/">INÍCIO</a></li>
@@ -32,11 +33,12 @@
                 <li class="nav-item"><a class="nav-link" href="/equipment">EQUIPAMENTOS</a></li>
                 <li class="nav-item"><a class="nav-link" href="/schedule">CALENDÁRIO DE UTILIZAÇÃO</a></li>
                 <li class="nav-item"><a class="nav-link" href="/team">EQUIPE</a></li>
+                
                 {% if current_user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link text-warning fw-bold" href="/admin">PAINEL GESTOR</a></li>
-                <li class="nav-item"><a class="nav-link" href="/logout">SAIR</a></li>
+                 <li class="nav-item"><a class="nav-link text-warning fw-bold" href="/admin">PAINEL GESTOR</a></li>
+                 <li class="nav-item"><a class="nav-link" href="/logout">SAIR</a></li>
                 {% else %}
-                <li class="nav-item"><a class="nav-link" href="/login"><i class="fas fa-lock"></i> LOGIN</a></li>
+                 <li class="nav-item"><a class="nav-link" href="/login"><i class="fas fa-lock"></i> LOGIN</a></li>
                 {% endif %}
             </ul>
         </div>
@@ -48,7 +50,7 @@
         {% for category, message in messages %}
             <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                 {{ message }}
-                <button type="button" class="btn-close" data-bs-alert="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         {% endfor %}
     {% endwith %}

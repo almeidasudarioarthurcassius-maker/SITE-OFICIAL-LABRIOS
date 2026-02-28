@@ -1,58 +1,87 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="text-center mb-5">
-    <h1 class="display-4 fw-bold" style="color: #000080;">LABRIOS</h1>
-    <h4 class="text-secondary">{{ settings.lab_name }}</h4>
+<div class="text-center mb-5 mt-4">
+    <h1 class="display-4 fw-bold" style="color: var(--navy);">LABRIOS</h1>
+    <h5 class="text-muted mb-4">{{ settings.lab_name }}</h5>
+    
+    <div class="alert alert-light border shadow-sm mx-auto" style="max-width: 800px;">
+        <p class="mb-0">{{ settings.hero_text }}</p>
+    </div>
 </div>
 
-<div class="hero-abnt mb-5">{{ settings.hero_text }}</div>
-
-<div class="row g-3 text-center mb-5">
-    <div class="col-md-3"><a href="/how-to-use" class="btn btn-outline-primary btn-pill w-100">REGRAS DE USO</a></div>
-    <div class="col-md-3"><a href="/schedule" class="btn btn-outline-primary btn-pill w-100">CALENDÁRIO DE UTILIZAÇÃO</a></div>
-    <div class="col-md-3"><a href="/equipment" class="btn btn-outline-primary btn-pill w-100">EQUIPAMENTOS E AGENDAMENTO</a></div>
-    <div class="col-md-3"><a href="/team" class="btn btn-outline-primary btn-pill w-100">EQUIPE</a></div>
+<div class="row g-4 text-center justify-content-center mb-5">
+    <div class="col-6 col-md-3">
+        <a href="/how-to-use" class="text-decoration-none card h-100 border-0 shadow-sm p-4">
+            <i class="fas fa-file-signature fa-3x text-primary mb-3"></i>
+            <h6 class="text-dark">AGENDAMENTO</h6>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="/schedule" class="text-decoration-none card h-100 border-0 shadow-sm p-4">
+            <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
+            <h6 class="text-dark">CALENDÁRIO DE UTILIZAÇÃO</h6>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="/equipment" class="text-decoration-none card h-100 border-0 shadow-sm p-4">
+            <i class="fas fa-flask fa-3x text-warning mb-3"></i>
+            <h6 class="text-dark">EQUIPAMENTOS</h6>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="/team" class="text-decoration-none card h-100 border-0 shadow-sm p-4">
+            <i class="fas fa-users-cog fa-3x text-info mb-3"></i>
+            <h6 class="text-dark">EQUIPE</h6>
+        </a>
+    </div>
 </div>
 
 <div class="row mt-5">
-    <div class="col-md-6">
-        <h3 class="border-bottom pb-2">COMITÊ GESTOR</h3>
-        <table class="table table-hover align-middle">
-            <thead class="table-light"><tr><th>Foto</th><th>Nome</th><th>Lattes</th></tr></thead>
-            <tbody>
-                {% for m in gestor %}
-                <tr>
-                    <td><img src="{{ m.photo }}" width="50" class="rounded-circle"></td>
-                    <td>{{ m.name }}</td>
-                    <td><a href="{{ m.lattes }}" target="_blank" class="btn btn-sm btn-outline-primary btn-pill">Lattes</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% if settings.committee_doc_link %}
-        <div class="text-end"><a href="{{ settings.committee_doc_link }}" target="_blank" class="btn btn-sm btn-dark btn-pill">Documento do Comitê</a></div>
-        {% endif %}
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold" style="color: var(--navy);">Comitê Gestor</h5></div>
+            <div class="card-body">
+                <table class="table table-sm align-middle">
+                    <thead><tr><th>Nome</th><th>Função</th><th>Lattes</th></tr></thead>
+                    <tbody>
+                        {% for m in gestores %}
+                        <tr><td>{{ m.name }}</td><td>{{ m.role }}</td><td><a href="{{ m.lattes }}" target="_blank"><i class="fas fa-link"></i></a></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if settings.link_portaria_gestor %}
+                <a href="{{ settings.link_portaria_gestor }}" target="_blank" class="btn btn-navy btn-sm w-100 mt-2">Portaria de Criação do Comitê Gestor</a>
+                {% endif %}
+            </div>
+        </div>
     </div>
-    <div class="col-md-6">
-        <h3 class="border-bottom pb-2">COMITÊ DE USUÁRIOS</h3>
-        <table class="table table-hover align-middle">
-            <thead class="table-light"><tr><th>Foto</th><th>Nome</th><th>Lattes</th></tr></thead>
-            <tbody>
-                {% for m in usuarios %}
-                <tr>
-                    <td><img src="{{ m.photo }}" width="50" class="rounded-circle"></td>
-                    <td>{{ m.name }}</td>
-                    <td><a href="{{ m.lattes }}" target="_blank" class="btn btn-sm btn-outline-primary btn-pill">Lattes</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold" style="color: var(--navy);">Comitê de Usuários</h5></div>
+            <div class="card-body">
+                <table class="table table-sm align-middle">
+                    <thead><tr><th>Nome</th><th>Função</th><th>Lattes</th></tr></thead>
+                    <tbody>
+                        {% for m in usuarios %}
+                        <tr><td>{{ m.name }}</td><td>{{ m.role }}</td><td><a href="{{ m.lattes }}" target="_blank"><i class="fas fa-link"></i></a></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if settings.link_portaria_usuarios %}
+                <a href="{{ settings.link_portaria_usuarios }}" target="_blank" class="btn btn-navy btn-sm w-100 mt-2">Portaria de Criação do Comitê de Usuários</a>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="mt-5 text-center p-4 bg-white rounded shadow-sm">
-    <h5 class="mb-3 fw-bold text-muted">VÍNCULOS INSTITUCIONAIS</h5>
-    <a href="https://dirlab.uea.edu.br/publico/view/58/" target="_blank" class="btn btn-primary btn-pill mx-2">Dirlab (UEA)</a>
-    <a href="https://pnipe.mcti.gov.br/laboratory/31271" target="_blank" class="btn btn-primary btn-pill mx-2">PNIPE (MCTI)</a>
+<div class="row justify-content-center mt-4 text-center">
+    <div class="col-md-8">
+        <h6 class="text-muted fw-bold mb-3">VÍNCULOS INSTITUCIONAIS</h6>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="https://dirlab.uea.edu.br/publico/view/58/" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-4">Dirlab (UEA)</a>
+            <a href="https://pnipe.mcti.gov.br/laboratory/31271" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-4">PNIPE (MCTI)</a>
+        </div>
+    </div>
 </div>
 {% endblock %}

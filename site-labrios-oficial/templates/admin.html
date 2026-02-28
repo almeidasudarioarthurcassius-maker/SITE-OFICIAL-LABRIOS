@@ -1,93 +1,83 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="mb-4">Painel Gestor</h2>
-
-<div class="card mb-4 shadow-sm border-primary">
-    <div class="card-header bg-primary text-white">Configurações do Site e PDF</div>
-    <div class="card-body">
-        <form action="/admin/update_settings" method="POST" enctype="multipart/form-data">
-            <label class="small">Nome do Laboratório</label>
-            <input type="text" name="lab_name" class="form-control mb-2" value="{{ settings.lab_name }}">
-            <label class="small">Texto ABNT de Boas-Vindas</label>
-            <textarea name="hero_text" class="form-control mb-2" rows="3">{{ settings.hero_text }}</textarea>
-            <label class="small">Link Formulário de Reserva</label>
-            <input type="text" name="form_link" class="form-control mb-2" value="{{ settings.external_form_link }}">
-            <label class="small">Link Documento Comitê Gestor</label>
-            <input type="text" name="committee_doc" class="form-control mb-2" value="{{ settings.committee_doc_link }}">
-            <label class="small">Atualizar Regimento (PDF)</label>
-            <input type="file" name="regimento" class="form-control mb-2">
-            <button class="btn btn-primary btn-pill">Salvar Alterações</button>
-        </form>
-        {% if settings.regimento_data %}
-        <form action="/admin/delete_regimento" method="POST" class="mt-2">
-            <button class="btn btn-danger btn-pill btn-sm">Remover PDF do Banco</button>
-        </form>
-        {% endif %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Painel Gestor</h1>
+        <a href="{{ url_for('home') }}" class="btn btn-outline-primary">Visualizar Site</a>
     </div>
-</div>
 
-<div class="row">
-    <!-- CADASTROS -->
-    <div class="col-md-6">
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header bg-dark text-white">Cadastrar Membros</div>
-            <div class="card-body">
-                <h6>Equipe do Lab</h6>
-                <form action="/admin/add_member" method="POST" enctype="multipart/form-data" class="mb-4">
-                    <input type="text" name="name" class="form-control mb-1" placeholder="Nome" required>
-                    <input type="text" name="role" class="form-control mb-1" placeholder="Função">
-                    <input type="text" name="lattes" class="form-control mb-1" placeholder="Lattes">
-                    <input type="file" name="photo" class="form-control mb-1">
-                    <button class="btn btn-success btn-sm btn-pill">Adicionar Membro Equipe</button>
+    <div class="card p-3 shadow-sm mb-4">
+        <h3>Fila de Espera</h3>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead><tr><th>Equipamento</th><th>Pesquisador</th><th>Ações</th></tr></thead>
+                <tbody>
+                    {% for res in pending_reservations %}
+                    <tr>
+                        <td>{{ res.equipment.name }}</td>
+                        <td>{{ res.name }}</td>
+                        <td>
+                            <form action="{{ url_for('approve_reservation', id=res.id) }}" method="POST" style="display:inline;"><button class="btn btn-success btn-sm">Aprovar</button></form>
+                            <form action="{{ url_for('reject_reservation', id=res.id) }}" method="POST" style="display:inline;"><button class="btn btn-danger btn-sm">Recusar</button></form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card p-3 shadow-sm h-100">
+                <h3>Configurações e Portarias</h3>
+                <form action="{{ url_for('update_settings') }}" method="POST" enctype="multipart/form-data">
+                    <label>Nome do Laboratório</label>
+                    <input type="text" name="lab_name" class="form-control mb-2" value="{{ settings.lab_name }}">
+                    <label>Link Portaria Comitê Gestor</label>
+                    <input type="text" name="link_portaria_gestor" class="form-control mb-2" value="{{ settings.link_portaria_gestor or '' }}">
+                    <label>Link Portaria Comitê Usuários</label>
+                    <input type="text" name="link_portaria_usuarios" class="form-control mb-2" value="{{ settings.link_portaria_usuarios or '' }}">
+                    <label>Link do Formulário de Reserva</label>
+                    <input type="text" name="form_link" class="form-control mb-2" value="{{ settings.external_form_link }}">
+                    <label>Texto de Boas-Vindas</label>
+                    <textarea name="hero_text" class="form-control mb-2">{{ settings.hero_text }}</textarea>
+                    <button type="submit" class="btn btn-primary w-100 mt-2">Salvar Alterações</button>
                 </form>
-                <h6>Comitês (Gestor ou Usuários)</h6>
-                <form action="/admin/add_committee" method="POST" enctype="multipart/form-data">
-                    <input type="text" name="name" class="form-control mb-1" placeholder="Nome" required>
-                    <input type="text" name="lattes" class="form-control mb-1" placeholder="Lattes">
-                    <select name="category" class="form-control mb-1">
-                        <option value="Gestor">Comitê Gestor</option>
-                        <option value="Usuário">Comitê de Usuários</option>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card p-3 shadow-sm">
+                <h3>Gerenciar Comitês</h3>
+                <form action="{{ url_for('add_committee_member') }}" method="POST" class="mb-3">
+                    <select name="type" class="form-select mb-2">
+                        <option value="gestor">Comitê Gestor</option>
+                        <option value="usuario">Comitê de Usuários</option>
                     </select>
-                    <input type="file" name="photo" class="form-control mb-1">
-                    <button class="btn btn-success btn-sm btn-pill">Adicionar ao Comitê</button>
+                    <input type="text" name="name" class="form-control mb-2" placeholder="Nome" required>
+                    <input type="text" name="role" class="form-control mb-2" placeholder="Função">
+                    <input type="text" name="lattes" class="form-control mb-2" placeholder="Link Lattes">
+                    <button type="submit" class="btn btn-info w-100">Adicionar ao Comitê</button>
                 </form>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    <p class="small fw-bold mb-1">Membros Atuais (Gestores):</p>
+                    {% for m in gestores %}
+                    <div class="d-flex justify-content-between border-bottom py-1 small">
+                        <span>{{ m.name }}</span>
+                        <form action="{{ url_for('delete_committee_member', type='gestor', id=m.id) }}" method="POST"><button class="btn btn-sm text-danger">x</button></form>
+                    </div>
+                    {% endfor %}
+                    <p class="small fw-bold mb-1 mt-2">Membros Atuais (Usuários):</p>
+                    {% for m in usuarios %}
+                    <div class="d-flex justify-content-between border-bottom py-1 small">
+                        <span>{{ m.name }}</span>
+                        <form action="{{ url_for('delete_committee_member', type='usuario', id=m.id) }}" method="POST"><button class="btn btn-sm text-danger">x</button></form>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-6">
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header bg-dark text-white">Cadastrar Equipamento e Regras</div>
-            <div class="card-body">
-                <h6>Novo Equipamento</h6>
-                <form action="/admin/add_equipment" method="POST" enctype="multipart/form-data" class="mb-4">
-                    <input type="text" name="name" class="form-control mb-1" placeholder="Nome" required>
-                    <input type="text" name="brand" class="form-control mb-1" placeholder="Marca">
-                    <input type="text" name="model" class="form-control mb-1" placeholder="Modelo">
-                    <textarea name="purpose" class="form-control mb-1" placeholder="Finalidade"></textarea>
-                    <input type="number" name="quantity" class="form-control mb-1" placeholder="Quantidade" value="1">
-                    <input type="file" name="image" class="form-control mb-1">
-                    <button class="btn btn-success btn-sm btn-pill">Cadastrar Equipamento</button>
-                </form>
-                <h6>Nova Regra</h6>
-                <form action="/admin/add_rule" method="POST">
-                    <textarea name="content" class="form-control mb-1" placeholder="Texto da regra"></textarea>
-                    <button class="btn btn-success btn-sm btn-pill">Adicionar Regra</button>
-                </form>
-            </div>
-        </div>
     </div>
-</div>
-
-<div class="card shadow-sm border-secondary mb-5">
-    <div class="card-header bg-secondary text-white">Gestão de Conteúdo (Editar/Excluir)</div>
-    <div class="card-body">
-        <p class="text-muted">Para excluir ou editar itens específicos, navegue pelo menu superior para as abas <strong>EQUIPE</strong>, <strong>EQUIPAMENTOS</strong> ou <strong>COMO USAR</strong>.</p>
-        <div class="d-flex gap-2">
-            <a href="/team" class="btn btn-outline-dark btn-pill btn-sm">Gerenciar Equipe</a>
-            <a href="/equipment" class="btn btn-outline-dark btn-pill btn-sm">Gerenciar Equipamentos</a>
-            <a href="/how-to-use" class="btn btn-outline-dark btn-pill btn-sm">Gerenciar Regras</a>
-        </div>
-    </div>
-</div>
 {% endblock %}

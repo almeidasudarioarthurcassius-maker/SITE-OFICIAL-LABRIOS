@@ -1,33 +1,42 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Como Utilizar o Laboratório</h2>
-    <a href="/" class="btn btn-secondary btn-pill btn-sm">Voltar</a>
+<div class="text-center mb-5 mt-4">
+    <h1 class="display-4 fw-bold" style="color: var(--navy);">Nossa Equipe</h1>
+    <p class="text-muted">Conheça os profissionais e pesquisadores do {{ settings.lab_name if settings else 'LABRIOS' }}</p>
 </div>
 
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <h4 class="border-bottom pb-2">Regras e Diretrizes</h4>
-        <ul class="list-group list-group-flush mb-4">
-            {% for r in rules %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ r.content }}
-                {% if current_user.is_authenticated %}
-                <form action="/admin/delete_rule/{{ r.id }}" method="POST"><button class="btn btn-sm text-danger">Excluir</button></form>
+<div class="row g-4 justify-content-center">
+    {% for m in members %}
+    <div class="col-md-4 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm text-center p-3">
+            <div class="mx-auto mt-3 mb-3" style="width: 120px; height: 120px; overflow: hidden; border-radius: 50%; border: 3px solid #f1c40f;">
+                {% if m.photo %}
+                    <img src="{{ m.photo }}" class="img-fluid w-100 h-100" style="object-fit: cover;" alt="{{ m.name }}">
+                {% else %}
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                        <i class="fas fa-user fa-3x text-secondary"></i>
+                    </div>
                 {% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-
-        <h4 class="border-bottom pb-2">Documentação e Links</h4>
-        <div class="mt-3">
-            {% if settings.external_form_link %}
-            <a href="{{ settings.external_form_link }}" target="_blank" class="btn btn-primary btn-pill me-2">Formulário de Uso</a>
-            {% endif %}
-            {% if settings.regimento_data %}
-            <a href="/download_regimento" class="btn btn-success btn-pill">Baixar Regimento (PDF)</a>
-            {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <h5 class="card-title fw-bold mb-1" style="color: var(--navy);">{{ m.name }}</h5>
+                <p class="card-text text-muted small mb-3">{{ m.role }}</p>
+                {% if m.lattes %}
+                <a href="{{ m.lattes }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                    <i class="fas fa-external-link-alt me-1"></i> Currículo Lattes
+                </a>
+                {% endif %}
+            </div>
         </div>
     </div>
+    {% else %}
+    <div class="col-12 text-center">
+        <p class="text-muted italic">Nenhum membro da equipe principal cadastrado no momento.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="text-center mt-5">
+    <a href="/" class="btn btn-secondary rounded-pill px-4">Voltar ao Início</a>
 </div>
 {% endblock %}

@@ -11,8 +11,8 @@ app.secret_key = "labrios_master_key_2026"
 
 # CONFIGURAÇÃO CLOUDINARY
 cloudinary.config(
-    cloud_name = "dlwydwoz1",
-    api_key = "165575356491915",
+    cloud_name = "dlwydwoz1", 
+    api_key = "165575356491915", 
     api_secret = "3Dwwxqub3r-hbT2qkt2SDW0cgOI",
     secure = True
 )
@@ -38,12 +38,18 @@ class Member(db.Model):
     lattes = db.Column(db.String(200))
     photo = db.Column(db.String(255))
 
-class CommitteeMember(db.Model):
+# Novos Modelos para os Comitês
+class GestorMember(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    role = db.Column(db.String(100))
     lattes = db.Column(db.String(200))
-    photo = db.Column(db.String(255))
-    category = db.Column(db.String(50)) # 'Gestor' ou 'Usuário'
+
+class UserMember(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    role = db.Column(db.String(100))
+    lattes = db.Column(db.String(200))
 
 class Equipment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -76,9 +82,11 @@ class LabSettings(db.Model):
     lab_name = db.Column(db.String(200), default="LABRIOS")
     hero_text = db.Column(db.Text, default="Bem-vindo ao Laboratório.")
     external_form_link = db.Column(db.String(300))
-    committee_doc_link = db.Column(db.String(300))
     regimento_data = db.Column(db.LargeBinary)
     regimento_filename = db.Column(db.String(255))
+    # Novos campos para links de portaria
+    link_portaria_gestor = db.Column(db.String(300))
+    link_portaria_usuarios = db.Column(db.String(300))
 
 # LOGIN E AUXILIARES
 login_manager = LoginManager()
@@ -100,9 +108,9 @@ def get_settings():
 # ROTAS PÚBLICAS
 @app.route("/")
 def home():
-    gestor = CommitteeMember.query.filter_by(category='Gestor').all()
-    usuarios = CommitteeMember.query.filter_by(category='Usuário').all()
-    return render_template("index.html", settings=get_settings(), gestor=gestor, usuarios=usuarios)
+    gestores = GestorMember.query.all()
+    usuarios = UserMember.query.all()
+    return render_template("index.html", settings=get_settings(), gestores=gestores, usuarios=usuarios)
 
 @app.route("/team")
 def team():
@@ -118,7 +126,12 @@ def download_regimento():
     if not s.regimento_data:
         flash("Arquivo não disponível.", "warning")
         return redirect(url_for("how_to_use"))
-    return send_file(io.BytesIO(s.regimento_data), mimetype='application/pdf', as_attachment=True, download_name=s.regimento_filename or "Regimento_LABRIOS.pdf")
+    return send_file(
+        io.BytesIO(s.regimento_data),
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=s.regimento_filename or "Regimento_LABRIOS.pdf"
+    )
 
 @app.route("/equipment")
 def equipment_list():
@@ -141,7 +154,7 @@ def request_reservation(equipment_id):
         )
         db.session.add(new_res)
         db.session.commit()
-        flash("Solicitação enviada!", "info")
+        flash("Solicitação enviada! Aguarde a aprovação do coordenador.", "info")
         return redirect(url_for("equipment_list"))
     return render_template("reserve.html", equipment=equipment, settings=get_settings())
 
@@ -154,7 +167,14 @@ def get_events():
     reserves = Reservation.query.filter_by(status='Aprovado').all()
     events = []
     for r in reserves:
-        events.append({'title': f"OCUPADO: {r.equipment.name}", 'start': r.date, 'color': '#000080'})
+        events.append({
+            'title': f"OCUPADO: {r.equipment.name}",
+            'start': r.date,
+            'color': '#000080',
+            'name': r.name,
+            'institution': r.institution,
+            'role': r.role
+        })
     return jsonify(events)
 
 # ADMINISTRAÇÃO
@@ -178,12 +198,117 @@ def logout():
 @login_required
 def admin_panel():
     return render_template("admin.html",
-        settings=get_settings(),
-        rules=Rule.query.all(),
-        members=Member.query.all(),
-        committee_members=CommitteeMember.query.all(),
-        equipments=Equipment.query.all(),
-        pending_reservations=Reservation.query.filter_by(status='Pendente').all())
+      settings=get_settings(),
+      rules=Rule.query.all(),
+      members=Member.query.all(),
+      gestores=GestorMember.query.all(),
+      usuarios=UserMember.query.all(),
+      equipments=Equipment.query.all(),
+      pending_reservations=Reservation.query.filter_by(status='Pendente').all())
+
+@app.route("/admin/update_settings", methods=["POST"])
+@login_required
+def update_settings():
+    s = get_settings()
+    s.lab_name = request.form.get("lab_name")
+    s.hero_text = request.form.get("hero_text")
+    s.external_form_link = request.form.get("form_link")
+    s.link_portaria_gestor = request.form.get("link_portaria_gestor")
+    s.link_portaria_usuarios = request.form.get("link_portaria_usuarios")
+    
+    pdf = request.files.get("regimento")
+    if pdf and pdf.filename != '':
+        s.regimento_data = pdf.read()
+        s.regimento_filename = pdf.filename
+    db.session.commit()
+    flash("Configurações salvas!", "success")
+    return redirect(url_for("admin_panel"))
+
+# ROTAS PARA COMITÊS
+@app.route("/admin/add_committee_member", methods=["POST"])
+@login_required
+def add_committee_member():
+    type = request.form.get("type")
+    name = request.form.get("name")
+    role = request.form.get("role")
+    lattes = request.form.get("lattes")
+    
+    if type == "gestor":
+        db.session.add(GestorMember(name=name, role=role, lattes=lattes))
+    else:
+        db.session.add(UserMember(name=name, role=role, lattes=lattes))
+    
+    db.session.commit()
+    flash("Membro do comitê adicionado!", "success")
+    return redirect(url_for("admin_panel"))
+
+@app.route("/admin/delete_committee_member/<string:type>/<int:id>", methods=["POST"])
+@login_required
+def delete_committee_member(type, id):
+    if type == "gestor":
+        m = GestorMember.query.get_or_404(id)
+    else:
+        m = UserMember.query.get_or_404(id)
+    db.session.delete(m)
+    db.session.commit()
+    flash("Membro removido!", "info")
+    return redirect(url_for("admin_panel"))
+
+# MANUTENÇÃO DAS ROTAS ORIGINAIS (COM AJUSTES PARA REDIRECTS)
+@app.route("/admin/add_member", methods=["POST"])
+@login_required
+def add_member():
+    f = request.files.get('photo')
+    img_url = None
+    if f and f.filename != '':
+        upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
+        img_url = upload_result['secure_url']
+    db.session.add(Member(name=request.form.get("name"), role=request.form.get("role"), lattes=request.form.get("lattes"), photo=img_url))
+    db.session.commit()
+    flash("Membro da equipe adicionado!", "success")
+    return redirect(url_for("admin_panel"))
+
+@app.route("/admin/delete_member/<int:id>", methods=["POST"])
+@login_required
+def delete_member(id):
+    db.session.delete(Member.query.get_or_404(id))
+    db.session.commit()
+    flash("Membro removido.", "info")
+    return redirect(url_for("admin_panel"))
+
+@app.route("/admin/add_equipment", methods=["POST"])
+@login_required
+def add_equipment():
+    f = request.files.get('image')
+    img_url = None
+    if f and f.filename != '':
+        upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
+        img_url = upload_result['secure_url']
+    db.session.add(Equipment(name=request.form.get("name"), brand=request.form.get("brand"), model=request.form.get("model"), purpose=request.form.get("purpose"), image=img_url, quantity=request.form.get("quantity", type=int)))
+    db.session.commit()
+    flash("Equipamento cadastrado!", "success")
+    return redirect(url_for("admin_panel"))
+
+@app.route("/admin/edit_equipment/<int:id>", methods=["POST"])
+@login_required
+def edit_equipment(id):
+    e = Equipment.query.get_or_404(id)
+    e.name, e.brand, e.model, e.purpose, e.quantity = request.form.get("name"), request.form.get("brand"), request.form.get("model"), request.form.get("purpose"), request.form.get("quantity", type=int)
+    f = request.files.get('image')
+    if f and f.filename != '':
+        upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
+        e.image = upload_result['secure_url']
+    db.session.commit()
+    flash("Equipamento atualizado!", "success")
+    return redirect(url_for("admin_panel"))
+
+@app.route("/admin/delete_equipment/<int:id>", methods=["POST"])
+@login_required
+def delete_equipment(id):
+    db.session.delete(Equipment.query.get_or_404(id))
+    db.session.commit()
+    flash("Equipamento removido.", "info")
+    return redirect(url_for("admin_panel"))
 
 @app.route("/admin/approve_reservation/<int:id>", methods=["POST"])
 @login_required
@@ -197,106 +322,8 @@ def approve_reservation(id):
 @app.route("/admin/reject_reservation/<int:id>", methods=["POST"])
 @login_required
 def reject_reservation(id):
-    res = Reservation.query.get_or_404(id)
-    db.session.delete(res)
+    db.session.delete(Reservation.query.get_or_404(id))
     db.session.commit()
-    flash("Solicitação removida.", "warning")
-    return redirect(url_for("admin_panel"))
-
-@app.route("/admin/update_settings", methods=["POST"])
-@login_required
-def update_settings():
-    s = get_settings()
-    s.lab_name = request.form.get("lab_name")
-    s.hero_text = request.form.get("hero_text")
-    s.external_form_link = request.form.get("form_link")
-    s.committee_doc_link = request.form.get("committee_doc")
-    pdf = request.files.get("regimento")
-    if pdf and pdf.filename != '':
-        s.regimento_data = pdf.read()
-        s.regimento_filename = pdf.filename
-    db.session.commit()
-    flash("Configurações salvas!", "success")
-    return redirect(url_for("admin_panel"))
-
-@app.route("/admin/delete_regimento", methods=["POST"])
-@login_required
-def delete_regimento():
-    s = get_settings()
-    s.regimento_data = None
-    s.regimento_filename = None
-    db.session.commit()
-    flash("Regimento removido.", "warning")
-    return redirect(url_for("admin_panel"))
-
-@app.route("/admin/add_equipment", methods=["POST"])
-@login_required
-def add_equipment():
-    f = request.files.get('image')
-    img_url = None
-    if f and f.filename != '':
-        upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
-        img_url = upload_result['secure_url']
-    db.session.add(Equipment(
-        name=request.form.get("name"),
-        brand=request.form.get("brand"),
-        model=request.form.get("model"),
-        purpose=request.form.get("purpose"),
-        image=img_url,
-        quantity=request.form.get("quantity", type=int)
-    ))
-    db.session.commit()
-    flash("Equipamento cadastrado!", "success")
-    return redirect(url_for("admin_panel"))
-
-@app.route("/admin/delete_equipment/<int:id>", methods=["POST"])
-@login_required
-def delete_equipment(id):
-    db.session.delete(Equipment.query.get_or_404(id))
-    db.session.commit()
-    flash("Equipamento removido.", "info")
-    return redirect(url_for("admin_panel"))
-
-@app.route("/admin/add_member", methods=["POST"])
-@login_required
-def add_member():
-    f = request.files.get('photo')
-    img_url = None
-    if f and f.filename != '':
-        upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
-        img_url = upload_result['secure_url']
-    db.session.add(Member(name=request.form.get("name"), role=request.form.get("role"), lattes=request.form.get("lattes"), photo=img_url))
-    db.session.commit()
-    flash("Membro adicionado!", "success")
-    return redirect(url_for("admin_panel"))
-
-@app.route("/admin/delete_member/<int:id>", methods=["POST"])
-@login_required
-def delete_member(id):
-    db.session.delete(Member.query.get_or_404(id))
-    db.session.commit()
-    flash("Membro removido.", "info")
-    return redirect(url_for("admin_panel"))
-
-@app.route("/admin/add_committee", methods=["POST"])
-@login_required
-def add_committee():
-    f = request.files.get('photo')
-    img_url = None
-    if f and f.filename != '':
-        upload_result = cloudinary.uploader.upload(f, folder="labrios/uploads")
-        img_url = upload_result['secure_url']
-    db.session.add(CommitteeMember(name=request.form.get("name"), lattes=request.form.get("lattes"), photo=img_url, category=request.form.get("category")))
-    db.session.commit()
-    flash("Membro de comitê adicionado!", "success")
-    return redirect(url_for("admin_panel"))
-
-@app.route("/admin/delete_committee/<int:id>", methods=["POST"])
-@login_required
-def delete_committee(id):
-    db.session.delete(CommitteeMember.query.get_or_404(id))
-    db.session.commit()
-    flash("Membro de comitê removido.", "info")
     return redirect(url_for("admin_panel"))
 
 @app.route("/admin/add_rule", methods=["POST"])
@@ -312,6 +339,14 @@ def add_rule():
 @login_required
 def delete_rule(id):
     db.session.delete(Rule.query.get_or_404(id))
+    db.session.commit()
+    return redirect(url_for("admin_panel"))
+
+@app.route("/admin/delete_regimento", methods=["POST"])
+@login_required
+def delete_regimento():
+    s = get_settings()
+    s.regimento_data = s.regimento_filename = None
     db.session.commit()
     return redirect(url_for("admin_panel"))
 

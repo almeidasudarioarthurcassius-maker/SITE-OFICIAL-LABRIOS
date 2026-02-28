@@ -7,15 +7,27 @@
     </div>
 
     <div class="card p-3 shadow-sm mb-4">
-        <h3>Fila de Espera</h3>
+        <h3>Fila de Espera (Solicitações Pendentes)</h3>
         <div class="table-responsive">
             <table class="table table-sm">
-                <thead><tr><th>Equipamento</th><th>Pesquisador</th><th>Ações</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Equipamento</th>
+                        <th>Pesquisador</th>
+                        <th>Instituição</th>
+                        <th>Horário</th>
+                        <th>Lattes</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
                 <tbody>
                     {% for res in pending_reservations %}
                     <tr>
                         <td>{{ res.equipment.name }}</td>
                         <td>{{ res.name }}</td>
+                        <td>{{ res.institution }}</td>
+                        <td>{{ res.date }} ({{ res.start_time }}-{{ res.end_time }})</td>
+                        <td><a href="{{ res.lattes }}" target="_blank">Ver</a></td>
                         <td>
                             <form action="{{ url_for('approve_reservation', id=res.id) }}" method="POST" style="display:inline;"><button class="btn btn-success btn-sm">Aprovar</button></form>
                             <form action="{{ url_for('reject_reservation', id=res.id) }}" method="POST" style="display:inline;"><button class="btn btn-danger btn-sm">Recusar</button></form>
@@ -30,7 +42,7 @@
     <div class="row">
         <div class="col-md-6 mb-4">
             <div class="card p-3 shadow-sm h-100">
-                <h3>Configurações e Portarias</h3>
+                <h3>Configurações Gerais</h3>
                 <form action="{{ url_for('update_settings') }}" method="POST" enctype="multipart/form-data">
                     <label>Nome do Laboratório</label>
                     <input type="text" name="lab_name" class="form-control mb-2" value="{{ settings.lab_name }}">
@@ -42,14 +54,16 @@
                     <input type="text" name="form_link" class="form-control mb-2" value="{{ settings.external_form_link }}">
                     <label>Texto de Boas-Vindas</label>
                     <textarea name="hero_text" class="form-control mb-2">{{ settings.hero_text }}</textarea>
+                    <label>Atualizar Regimento (PDF)</label>
+                    <input type="file" name="regimento" class="form-control mb-2" accept=".pdf">
                     <button type="submit" class="btn btn-primary w-100 mt-2">Salvar Alterações</button>
                 </form>
             </div>
         </div>
 
         <div class="col-md-6 mb-4">
-            <div class="card p-3 shadow-sm">
-                <h3>Gerenciar Comitês</h3>
+            <div class="card p-3 shadow-sm h-100">
+                <h3>Cadastrar Membros dos Comitês</h3>
                 <form action="{{ url_for('add_committee_member') }}" method="POST" class="mb-3">
                     <select name="type" class="form-select mb-2">
                         <option value="gestor">Comitê Gestor</option>
@@ -58,26 +72,90 @@
                     <input type="text" name="name" class="form-control mb-2" placeholder="Nome" required>
                     <input type="text" name="role" class="form-control mb-2" placeholder="Função">
                     <input type="text" name="lattes" class="form-control mb-2" placeholder="Link Lattes">
-                    <button type="submit" class="btn btn-info w-100">Adicionar ao Comitê</button>
+                    <button type="submit" class="btn btn-info w-100">Adicionar Membro</button>
                 </form>
-                <div style="max-height: 200px; overflow-y: auto;">
-                    <p class="small fw-bold mb-1">Membros Atuais (Gestores):</p>
+                <div style="max-height: 200px; overflow-y: auto;" class="small">
+                    <p class="fw-bold mb-1">Membros Gestores:</p>
                     {% for m in gestores %}
-                    <div class="d-flex justify-content-between border-bottom py-1 small">
+                    <div class="d-flex justify-content-between border-bottom py-1">
                         <span>{{ m.name }}</span>
-                        <form action="{{ url_for('delete_committee_member', type='gestor', id=m.id) }}" method="POST"><button class="btn btn-sm text-danger">x</button></form>
+                        <form action="{{ url_for('delete_committee_member', ctype='gestor', id=m.id) }}" method="POST"><button class="btn btn-sm text-danger border-0 bg-transparent">x</button></form>
                     </div>
                     {% endfor %}
-                    <p class="small fw-bold mb-1 mt-2">Membros Atuais (Usuários):</p>
+                    <p class="fw-bold mb-1 mt-2">Membros Usuários:</p>
                     {% for m in usuarios %}
-                    <div class="d-flex justify-content-between border-bottom py-1 small">
+                    <div class="d-flex justify-content-between border-bottom py-1">
                         <span>{{ m.name }}</span>
-                        <form action="{{ url_for('delete_committee_member', type='usuario', id=m.id) }}" method="POST"><button class="btn btn-sm text-danger">x</button></form>
+                        <form action="{{ url_for('delete_committee_member', ctype='usuario', id=m.id) }}" method="POST"><button class="btn btn-sm text-danger border-0 bg-transparent">x</button></form>
                     </div>
                     {% endfor %}
                 </div>
             </div>
         </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card p-3 shadow-sm h-100">
+                <h3>Equipamentos</h3>
+                <button class="btn btn-success w-100 mb-3" data-bs-toggle="modal" data-bs-target="#modalAddEquip">Novo Equipamento</button>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    {% for e in equipments %}
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <span>{{ e.name }}</span>
+                        <div>
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ e.id }}">Editar</button>
+                            <form action="{{ url_for('delete_equipment', id=e.id) }}" method="POST" style="display:inline;"><button class="btn btn-sm text-danger">x</button></form>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="editModal{{ e.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <form action="{{ url_for('edit_equipment', id=e.id) }}" method="POST" enctype="multipart/form-data" class="modal-content">
+                                <div class="modal-header"><h5>Editar {{ e.name }}</h5></div>
+                                <div class="modal-body text-start">
+                                    <input type="text" name="name" class="form-control mb-2" value="{{ e.name }}" required>
+                                    <input type="text" name="brand" class="form-control mb-2" value="{{ e.brand }}">
+                                    <input type="text" name="model" class="form-control mb-2" value="{{ e.model }}">
+                                    <textarea name="purpose" class="form-control mb-2">{{ e.purpose }}</textarea>
+                                    <input type="number" name="quantity" class="form-control mb-2" value="{{ e.quantity }}">
+                                    <input type="file" name="image" class="form-control">
+                                </div>
+                                <div class="modal-footer"><button type="submit" class="btn btn-primary">Salvar</button></div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card p-3 shadow-sm h-100">
+                <h3>Membros da Equipe</h3>
+                <form action="{{ url_for('add_member') }}" method="POST" enctype="multipart/form-data">
+                    <input type="text" name="name" class="form-control mb-2" placeholder="Nome" required>
+                    <input type="text" name="role" class="form-control mb-2" placeholder="Função">
+                    <input type="text" name="lattes" class="form-control mb-2" placeholder="Link Lattes">
+                    <input type="file" name="photo" class="form-control mb-2">
+                    <button type="submit" class="btn btn-info w-100">Adicionar à Equipe</button>
+                </form>
+            </div>
+        </div>
     </div>
+</div>
+
+<div class="modal fade" id="modalAddEquip" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="{{ url_for('add_equipment') }}" method="POST" enctype="multipart/form-data" class="modal-content">
+            <div class="modal-header"><h5>Novo Equipamento</h5></div>
+            <div class="modal-body">
+                <input type="text" name="name" class="form-control mb-2" placeholder="Nome" required>
+                <input type="text" name="brand" class="form-control mb-2" placeholder="Marca">
+                <input type="text" name="model" class="form-control mb-2" placeholder="Modelo">
+                <textarea name="purpose" class="form-control mb-2" placeholder="Finalidade"></textarea>
+                <input type="number" name="quantity" class="form-control mb-2" value="1">
+                <input type="file" name="image" class="form-control mb-2">
+            </div>
+            <div class="modal-footer"><button type="submit" class="btn btn-success">Cadastrar</button></div>
+        </form>
     </div>
+</div>
 {% endblock %}

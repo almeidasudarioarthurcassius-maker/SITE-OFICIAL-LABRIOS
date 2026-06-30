@@ -45,7 +45,7 @@ export default async function AdminRegrasPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {regras?.map((r: any) => (
-          <div key={r.id} style={{ background: 'white', padding: '16px 20px', borderRadius: '8px', border: '1px solid var(--gray-200)', display: 'flex', justifyBetween: 'space-between', alignItems: 'center', gap: '20px' }}>
+          <div key={r.id} style={{ background: 'white', padding: '16px 20px', borderRadius: '8px', border: '1px solid var(--gray-200)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
             <div style={{ flex: 1 }}>
               <span style={{ background: 'var(--navy)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', marginRight: '10px' }}>#{r.ordem}</span>
               <p style={{ display: 'inline', fontSize: '14px' }}>{r.texto}</p>

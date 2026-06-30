@@ -1,35 +1,14 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+// middleware.ts
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  
-  // Captura as chaves diretamente para evitar falha se o processo atrasar para injetar
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    console.error("Middleware: Chaves do Supabase não encontradas no ambiente.");
-    return res;
+export function middleware(req: NextRequest) {
+  const isAdmin = req.nextUrl.pathname.startsWith('/admin');
+  const isLoginPage = req.nextUrl.pathname === '/admin/login';
+  if (isAdmin && !isLoginPage) {
+    const session = req.cookies.get('labrios_admin_session');
+    if (!session) return NextResponse.redirect(new URL('/admin/login', req.url));
   }
-
-  try {
-    const supabase = createMiddlewareClient({ req, res }, {
-      supabaseUrl,
-      supabaseKey
-    });
-    
-    // Atualiza a sessão se ela existir
-    await supabase.auth.getSession();
-  } catch (error) {
-    console.error("Erro no middleware de autenticação:", error);
-  }
-
-  return res;
+  return NextResponse.next();
 }
 
-// Garante que o middleware rode apenas nas rotas de admin
-export const config = {
-  matcher: ['/admin/:path*'],
-};
+export const config = { matcher: ['/admin/:path*'] };

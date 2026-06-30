@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import { supabase } from '../../../lib/supabase';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -8,28 +7,29 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage('Validando Acesso...');
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    // Usuários e senhas incorporados diretamente no código
+    const usuario1 = { email: 'acas2025@lab.com', password: '00783973241' };
+    const usuario2 = { email: 'jovito@labrios.org', password: 'lab2026coord' };
 
-      if (error) {
-        alert('Credenciais inválidas: ' + error.message);
-        setMessage('');
-        setLoading(false);
-        return;
-      }
-
-      if (data?.user) {
-        setMessage('Redirecionando para o painel...');
-        // Força a atualização do navegador e evita travamento de rotas do Next 15
-        window.location.href = '/admin/equipamentos';
-      }
-    } catch (err) {
-      alert('Ocorreu um erro inesperado ao tentar realizar o login.');
+    // Validação direta
+    if (
+      (email === usuario1.email && password === usuario1.password) ||
+      (email === usuario2.email && password === usuario2.password)
+    ) {
+      setMessage('Redirecionando para o painel...');
+      
+      // Salva uma flag no localStorage apenas para controle simples se necessário
+      localStorage.setItem('labrios_authenticated', 'true');
+      
+      // Redireciona diretamente para a tela de gerenciamento de equipamentos
+      window.location.href = '/admin/equipamentos';
+    } else {
+      alert('Credenciais inválidas! Verifique o e-mail e a senha digitados.');
       setMessage('');
       setLoading(false);
     }

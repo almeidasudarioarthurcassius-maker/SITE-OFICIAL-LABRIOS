@@ -1,34 +1,57 @@
-﻿import type { Metadata } from 'next';
+// app/layout.tsx
+import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
 
 export const metadata: Metadata = {
-  title: 'Portal LABRIOS — Sistema de Gestão Institucional',
-  description: 'Portal Integrado Interativo para Reservas de Equipamentos e Gestão de Comitês.',
+  title: 'LABRIOS — Laboratório de Análise de Água do Médio Amazonas',
+  description: 'Portal de gestão e reservas de equipamentos do LABRIOS/CESP — UEA.',
 };
 
 export const dynamic = 'force-dynamic';
 
-async function getLabConfig() {
-  const { data: geral } = await supabase.from('configuracoes_labrios').select('*').eq('chave', 'geral').single();
-  const { data: rodape } = await supabase.from('configuracoes_labrios').select('*').eq('chave', 'rodape').single();
-  return {
-    geral: geral?.valor || {},
-    rodape: rodape?.valor || {}
-  };
+async function getSiteConfig() {
+  try {
+    const { data } = await supabase
+      .from('configuracoes_labrios')
+      .select('chave, valor')
+      .in('chave', ['geral', 'rodape']);
+
+    const config: Record<string, any> = {};
+    data?.forEach((r) => { config[r.chave] = r.valor; });
+
+    // Sanitiza rodape.parcerias
+    const rodape = config.rodape ?? {};
+    if (Array.isArray(rodape.parcerias)) {
+      rodape.parcerias = rodape.parcerias
+        .filter((p: any) => p && typeof p === 'object')
+        .map((p: any) => ({
+          nome: typeof p.nome === 'string' ? p.nome : '',
+          link: typeof p.link === 'string' ? p.link : undefined,
+        }))
+        .filter((p: any) => p.nome.length > 0);
+    }
+
+    return {
+      logoUrl: typeof config.geral?.logo_url === 'string' ? config.geral.logo_url : null,
+      nomeLab: typeof config.geral?.nome_oficial === 'string' ? config.geral.nome_oficial : undefined,
+      rodape,
+    };
+  } catch {
+    return { logoUrl: null, nomeLab: undefined, rodape: {} };
+  }
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const config = await getLabConfig();
-
+  const { logoUrl, nomeLab, rodape } = await getSiteConfig();
   return (
     <html lang="pt-BR">
       <body>
-        <Navbar nomeLab={config.geral.nome_oficial} />
-        <main style={{ minHeight: '80vh' }}>{children}</main>
-        <Footer config={config.rodape} />
+        <Navbar logoUrl={logoUrl} nomeLab={nomeLab} />
+        <main>{children}</main>
+        <Footer config={rodape} />
       </body>
     </html>
   );

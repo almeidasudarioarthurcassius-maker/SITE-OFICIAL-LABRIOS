@@ -1,27 +1,38 @@
-﻿'use client';
+'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setMessage('Validando Acesso...');
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      alert('Credenciais inválidas: ' + error.message);
-    } else {
-      router.push('/admin/dashboard');
-      router.refresh();
+      if (error) {
+        alert('Credenciais inválidas: ' + error.message);
+        setMessage('');
+        setLoading(false);
+        return;
+      }
+
+      if (data?.user) {
+        setMessage('Redirecionando para o painel...');
+        // Força a atualização do navegador e evita travamento de rotas do Next 15
+        window.location.href = '/admin/equipamentos';
+      }
+    } catch (err) {
+      alert('Ocorreu um erro inesperado ao tentar realizar o login.');
+      setMessage('');
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -45,7 +56,7 @@ export default function AdminLoginPage() {
           </div>
 
           <button type="submit" disabled={loading} style={{ background: 'var(--navy)', color: 'white', padding: '14px', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s', marginTop: '8px' }}>
-            {loading ? 'Validando Acesso...' : 'Entrar no Sistema'}
+            {loading ? message : 'Entrar no Sistema'}
           </button>
         </div>
       </form>

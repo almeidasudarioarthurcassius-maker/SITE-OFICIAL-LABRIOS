@@ -13,6 +13,7 @@ import { ManageConfig } from "../../components/admin/ManageConfig";
 export default function AdminPage() {
   const [tab, setTab] = useState("dashboard");
   const [loading, setLoading] = useState(true);
+  const [counts, setCounts] = useState({ equipments: 0, team: 0, reservations: 0 });
   const router = useRouter();
 
   useEffect(() => {
@@ -21,6 +22,23 @@ export default function AdminPage() {
       if (!session) {
         router.push("/login");
       } else {
+        // Busca contagens reais do Supabase para alimentar as estatísticas do Dashboard
+        try {
+          const [eqCount, tmCount, resCount] = await Promise.all([
+            supabase.from("equipments").select("*", { count: "exact", head: true }),
+            supabase.from("team").select("*", { count: "exact", head: true }),
+            supabase.from("reservations").select("*", { count: "exact", head: true })
+          ]);
+
+          setCounts({
+            equipments: eqCount.count || 0,
+            team: tmCount.count || 0,
+            reservations: resCount.count || 0
+          });
+        } catch (error) {
+          console.error("Erro ao carregar estatísticas:", error);
+        }
+        
         setLoading(false);
       }
     }
@@ -45,7 +63,7 @@ export default function AdminPage() {
       <AdminSidebar currentTab={tab} setTab={setTab} onLogout={handleLogout} />
       
       <main className="flex-1 p-6 md:p-8 overflow-y-auto">
-        {tab === "dashboard" && <DashboardStats />}
+        {tab === "dashboard" && <DashboardStats counts={counts} />}
         {tab === "equipments" && <ManageEquipments />}
         {tab === "team" && <ManageTeam />}
         {tab === "reservations" && <ManageReservations />}

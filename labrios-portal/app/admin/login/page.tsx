@@ -1,7 +1,6 @@
 'use client';
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../lib/supabase';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -16,8 +15,8 @@ export default function AdminLoginPage() {
     setError(null);
 
     try {
-      // Como o roteamento administrativo nativo do prompt e middleware usam cookies baseados na API de autenticação customizada do LTIP:
-      const response = await fetch('/api/admin/auth', {
+      // Ajustado estritamente para o caminho do teu ficheiro de API
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),

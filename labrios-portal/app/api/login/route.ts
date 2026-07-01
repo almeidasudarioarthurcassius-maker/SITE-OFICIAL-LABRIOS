@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '../../../../lib/supabase';
+// O alias '@/' resolve automaticamente a partir da raiz do projeto, eliminando erros do Webpack
+import { createServiceClient } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function POST(req: NextRequest) {
 
     const supabaseService = createServiceClient();
     
-    // Busca usuário admin
+    // Procura o utilizador administrador
     const { data: user, error } = await supabaseService
       .from('admin_users')
       .select('*')
@@ -19,10 +20,10 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error || !user) {
-      return NextResponse.json({ message: 'Usuário ou senha incorretos.' }, { status: 401 });
+      return NextResponse.json({ message: 'Utilizador ou senha incorretos.' }, { status: 401 });
     }
 
-    // Valida o hash da senha usando RPC estrito do postgres crypt pgcrypto
+    // Valida o hash da senha usando a função RPC do Supabase
     const { data: valid, error: rpcError } = await supabaseService
       .rpc('verify_admin_password', { 
         input_username: username, 
@@ -30,21 +31,21 @@ export async function POST(req: NextRequest) {
       });
 
     if (rpcError || !valid) {
-      return NextResponse.json({ message: 'Usuário ou senha incorretos.' }, { status: 401 });
+      return NextResponse.json({ message: 'Utilizador ou senha incorretos.' }, { status: 401 });
     }
 
-    // Cria resposta e injeta cookie de sessão criptografada simples para o Middleware
+    // Cria a resposta e injeta o cookie de sessão para o Middleware
     const res = NextResponse.json({ success: true });
     res.cookies.set('labrios_admin_session', 'authenticated_token_active', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 60 * 60 * 3, // 3 horas
+      maxAge: 60 * 60 * 3, // Validade de 3 horas
       path: '/',
     });
 
     return res;
   } catch (err: any) {
-    return NextResponse.json({ message: 'Erro interno.' }, { status: 500 });
+    return NextResponse.json({ message: 'Erro interno no servidor.' }, { status: 500 });
   }
 }

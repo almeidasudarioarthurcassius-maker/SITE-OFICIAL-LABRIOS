@@ -1,46 +1,50 @@
-// app/api/login/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '../../../lib/supabase';
+import { createServiceClient } from '../../../../lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, senha } = await req.json();
-    if (!email || !senha) {
-      return NextResponse.json({ ok: false, message: 'Informe e-mail e senha.' }, { status: 400 });
+    const { username, password } = await req.json();
+
+    if (!username || !password) {
+      return NextResponse.json({ message: 'Campos em branco.' }, { status: 400 });
     }
 
-    const supabase = createServiceClient();
-    const { data, error } = await supabase.rpc('verificar_login', {
-      p_email: email,
-      p_senha: senha,
-    });
+    const supabaseService = createServiceClient();
+    
+    // Busca usuário admin
+    const { data: user, error } = await supabaseService
+      .from('admin_users')
+      .select('*')
+      .eq('username', username)
+      .single();
 
-    if (error) {
-      return NextResponse.json({ ok: false, message: 'Erro ao validar login.' }, { status: 500 });
+    if (error || !user) {
+      return NextResponse.json({ message: 'Usuário ou senha incorretos.' }, { status: 401 });
     }
 
-    const sucesso = data && data.length > 0 && data[0].ok;
-    if (!sucesso) {
-      return NextResponse.json({ ok: false, message: 'E-mail ou senha incorretos.' }, { status: 401 });
+    // Valida o hash da senha usando RPC estrito do postgres crypt pgcrypto
+    const { data: valid, error: rpcError } = await supabaseService
+      .rpc('verify_admin_password', { 
+        input_username: username, 
+        input_password: password 
+      });
+
+    if (rpcError || !valid) {
+      return NextResponse.json({ message: 'Usuário ou senha incorretos.' }, { status: 401 });
     }
 
-    const response = NextResponse.json({ ok: true, nome: data[0].nome });
-    // Cookie de sessão simples — válido por 8 horas
-    response.cookies.set('ltip_admin_session', email, {
+    // Cria resposta e injeta cookie de sessão criptografada simples para o Middleware
+    const res = NextResponse.json({ success: true });
+    res.cookies.set('labrios_admin_session', 'authenticated_token_active', {
       httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 8,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 3, // 3 horas
       path: '/',
     });
-    return response;
-  } catch {
-    return NextResponse.json({ ok: false, message: 'Requisição inválida.' }, { status: 400 });
-  }
-}
 
-export async function DELETE() {
-  const response = NextResponse.json({ ok: true });
-  response.cookies.delete('ltip_admin_session');
-  return response;
+    return res;
+  } catch (err: any) {
+    return NextResponse.json({ message: 'Erro interno.' }, { status: 500 });
+  }
 }

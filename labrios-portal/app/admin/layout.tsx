@@ -1,5 +1,4 @@
 'use client';
-// app/admin/layout.tsx
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -28,7 +27,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="admin-sidebar">
         <div className="admin-sidebar-header">
           <h2>⚙️ Painel Gestor</h2>
-          <p>LTIP Administração</p>
+          <p>LabRios Administração</p>
         </div>
         <nav className="admin-nav">
           {NAV.map((item) => (

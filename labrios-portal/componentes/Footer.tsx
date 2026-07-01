@@ -1,52 +1,76 @@
-import Link from 'next/link';
+'use client';
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
-export type Parceria = { nome: string; link?: string };
-export type HorarioItem = { dias: string; horario: string };
-type Contato = {
-  endereco_linha1?: string;
-  endereco_linha2?: string;
-  cep?: string;
-  cidade?: string;
-  telefone?: string;
-  email?: string;
-  observacao?: string;
-  horarios?: HorarioItem[];
-};
+export default function Footer() {
+  const [contato, setContato] = useState<any>(null);
+  const [parcerias, setParcerias] = useState<any[]>([]);
 
-type Props = { contato?: Contato; parcerias?: Parceria[] };
-
-export default function Footer({ contato, parcerias }: Props) {
-  const currentYear = new Date().getFullYear();
+  useEffect(() => {
+    async function fetchFooterData() {
+      const { data } = await supabase.from('configuracoes_site').select('*').in('chave', ['contato', 'parcerias']);
+      data?.forEach(row => {
+        if (row.chave === 'contato') setContato(row.valor);
+        if (row.chave === 'parcerias') setParcerias(row.valor);
+      });
+    }
+    fetchFooterData();
+  }, []);
 
   return (
-    <footer style={{ background: '#00252E', color: 'white', padding: '60px 0 30px', fontSize: '14px' }}>
-      <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '40px', marginBottom: '40px' }}>
+    <footer style={{ background: 'var(--navy)', color: 'white', padding: '40px 0', marginTop: '60px' }}>
+      <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '40px' }}>
+        
+        {/* Bloco de Endereço e Contato */}
         <div>
-          <h4 style={{ color: '#B2DFDB', marginBottom: '16px', fontSize: '16px' }}>LabRios / CESP</h4>
-          <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.6' }}>
-            Laboratório de Análise de Água do Baixo e Médio Amazonas. Centro de Estudos Superiores de Parintins.
-          </p>
+          <h4 style={{ color: 'white', marginBottom: '16px' }}>📍 Localização e Contato</h4>
+          {contato ? (
+            <div style={{ fontSize: '14px', color: 'var(--gray-300)', lineHeight: '1.6' }}>
+              <p>{contato.endereco_linha1}</p>
+              <p>{contato.endereco_linha2}</p>
+              <p>CEP: {contato.cep} - {contato.cidade}</p>
+              <p style={{ marginTop: '10px' }}>📞 {contato.telefone}</p>
+              <p>✉️ {contato.email}</p>
+            </div>
+          ) : (
+            <p style={{ fontSize: '14px', color: 'var(--gray-400)' }}>Carregando dados de contato...</p>
+          )}
         </div>
+
+        {/* Bloco de Horários */}
         <div>
-          <h4 style={{ color: '#B2DFDB', marginBottom: '16px', fontSize: '16px' }}>Contato & Localização</h4>
-          <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.5' }}>
-            {contato?.endereco_linha1 || 'Estrada Odovaldo Novo, s/n'}<br />
-            {contato?.endereco_linha2 || 'Djard Vieira'}<br />
-            CEP: {contato?.cep || '69152-470'} — {contato?.cidade || 'Parintins – AM'}<br />
-            Email: {contato?.email || 'labrios.cesp@uea.edu.br'}
-          </p>
+          <h4 style={{ color: 'white', marginBottom: '16px' }}>🕒 Atendimento</h4>
+          {contato?.horarios?.map((h: any, idx: number) => (
+            <div key={idx} style={{ fontSize: '14px', marginBottom: '8px', color: 'var(--gray-300)' }}>
+              <strong>{h.dias}:</strong> {h.horario}
+            </div>
+          ))}
         </div>
+
+        {/* Bloco Dinâmico de Parceiros */}
         <div>
-          <h4 style={{ color: '#B2DFDB', marginBottom: '16px', fontSize: '16px' }}>Links Rápidos</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <Link href="/#inventario" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Equipamentos</Link>
-            <Link href="/#agendamento" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Solicitar Reserva</Link>
-            <Link href="/documentos" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Relatórios Técnicos</Link>
+          <h4 style={{ color: 'white', marginBottom: '16px' }}>🤝 Parceiros Institucionais</h4>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+            {parcerias.length === 0 ? (
+              <p style={{ fontSize: '14px', color: 'var(--gray-400)' }}>Nenhum apoiador listado.</p>
+            ) : (
+              parcerias.map((p, idx) => (
+                <a 
+                  key={idx} 
+                  href={p.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  style={{ background: 'rgba(255,255,255,0.1)', color: 'white', padding: '6px 12px', borderRadius: '4px', fontSize: '13px', textDecoration: 'none', transition: 'background 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                >
+                  {p.nome} ↗
+                </a>
+              ))
+            )}
           </div>
         </div>
-      </div>
-      <div style={{ textAlign: 'center', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
-        <p>&copy; {currentYear} LabRios/CESP. Todos os direitos reservados.</p>
+
       </div>
     </footer>
   );

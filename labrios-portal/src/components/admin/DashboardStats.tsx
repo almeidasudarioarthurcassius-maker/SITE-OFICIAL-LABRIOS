@@ -1,47 +1,39 @@
 "use client";
 import React from "react";
-import { Layers, Calendar, CheckSquare, Clock } from "lucide-react";
+import { Layers, Calendar, Users } from "lucide-react";
 
 interface DashboardStatsProps {
-  stats: {
-    totalEquipments: number;
-    totalReservations: number;
-    approvedReservations: number;
-    pendingReservations: number;
+  counts: {
+    equipments: number;
+    team: number;
+    reservations: number;
   };
 }
 
-// Alterado de "export default function" para "export function" para casar com o import antigo
-export function DashboardStats({ stats }: DashboardStatsProps) {
+export function DashboardStats({ counts }: DashboardStatsProps) {
   const cards = [
     {
       icon: <Layers className="w-5 h-5 text-[#003366]" />,
       title: "Equipamentos",
-      value: stats.totalEquipments,
+      value: counts?.equipments || 0,
       desc: "Dispositivos ativos no patrimônio",
     },
     {
       icon: <Calendar className="w-5 h-5 text-[#2E7D32]" />,
       title: "Total de Reservas",
-      value: stats.totalReservations,
-      desc: "Solicitações registradas no banco",
+      value: counts?.reservations || 0,
+      desc: "Solicitações registradas no sistema",
     },
     {
-      icon: <CheckSquare className="w-5 h-5 text-blue-600" />,
-      title: "Aprovadas",
-      value: stats.approvedReservations,
-      desc: "Agendamentos homologados na agenda",
-    },
-    {
-      icon: <Clock className="w-5 h-5 text-amber-500" />,
-      title: "Pendentes",
-      value: stats.pendingReservations,
-      desc: "Aguardando análise da coordenação",
-    },
+      icon: <Users className="w-5 h-5 text-blue-600" />,
+      title: "Equipe Técnico-Científica",
+      value: counts?.team || 0,
+      desc: "Pesquisadores e colaboradores ativos",
+    }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
       {cards.map((c, i) => (
         <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 flex items-center gap-4 shadow-sm">
           <div className="p-3 bg-gray-50 rounded-xl shrink-0">

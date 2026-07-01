@@ -1,5 +1,6 @@
-﻿import type { Metadata } from "next";
-import "@/app/globals.css";
+import type { Metadata } from "next";
+import React from "react";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "LABRIOS — Laboratório de Análise de Água do Baixo Amazonas",
@@ -8,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" class="scroll-smooth">
-      <body class="bg-white text-gray-800 antialiased font-sans m-0 p-0">
+    <html lang="pt-BR" className="scroll-smooth">
+      <body className="bg-white text-gray-800 antialiased font-sans m-0 p-0">
         {children}
       </body>
     </html>

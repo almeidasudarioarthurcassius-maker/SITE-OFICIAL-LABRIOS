@@ -1,4 +1,3 @@
-// middleware.ts (na raiz do projeto)
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(req: NextRequest) {
@@ -6,7 +5,7 @@ export function middleware(req: NextRequest) {
   const isLoginPage = req.nextUrl.pathname === '/admin/login';
 
   if (isAdminRoute && !isLoginPage) {
-    const session = req.cookies.get('ltip_admin_session');
+    const session = req.cookies.get('labrios_admin_session');
     if (!session) {
       const loginUrl = new URL('/admin/login', req.url);
       return NextResponse.redirect(loginUrl);

@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Garante que nenhuma camada (CDN, proxy de hospedagem, navegador) guarde
-  // em cache as páginas e libere conteúdo desatualizado para os visitantes.
-  // Resolve o atraso entre cadastrar algo no admin e ele aparecer no site.
   async headers() {
     return [
       {

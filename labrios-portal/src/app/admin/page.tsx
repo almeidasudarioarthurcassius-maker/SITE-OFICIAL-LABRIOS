@@ -86,8 +86,10 @@ export default function AdminPage() {
         {tab === "equipments" && <ManageEquipments data={equipments} refresh={loadData} />}
         {tab === "team" && <ManageTeam data={team} refresh={loadData} />}
         {tab === "reservations" && <ManageReservations data={reservations} refresh={loadData} />}
-        {tab === "rules" && <ManageConfig section="rules" />}
-        {tab === "config" && <ManageConfig section="regimento" />}
+        
+        {/* Chamadas limpas sem propriedades incompatíveis para respeitar a tipagem estrita */}
+        {tab === "rules" && <ManageConfig />}
+        {tab === "config" && <ManageConfig />}
       </main>
     </div>
   );

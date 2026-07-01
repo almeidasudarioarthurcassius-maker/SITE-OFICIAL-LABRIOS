@@ -1,65 +1,41 @@
-// app/equipe/page.tsx  (Server Component)
 import { supabase } from '../../lib/supabase';
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Equipe — LTIP',
-  description: 'Conheça os pesquisadores, técnicos e coordenadores do Laboratório LTIP.',
-};
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-export const fetchCache = 'force-no-store';
+
+async function getEquipe() {
+  const { data } = await supabase.from('equipe').select('*').order('ordem');
+  return data || [];
+}
 
 export default async function EquipePage() {
-  const { data: equipe, error } = await supabase
-    .from('equipe')
-    .select('*')
-    .order('ordem');
-
-  if (error) console.error('Erro ao carregar equipe:', error.message);
-
-  const membros = equipe ?? [];
+  const membros = await getEquipe();
 
   return (
-    <section className="team" id="equipe" style={{ marginTop: 68, paddingTop: 80, background: 'white', minHeight: '70vh' }}>
+    <section style={{ marginTop: '68px', minHeight: 'calc(100vh - 300px)' }}>
       <div className="container">
-        <div className="section-label">Nossos Profissionais</div>
-        <h1 className="section-title">Equipe do Laboratório</h1>
+        <div className="section-label">Corpo Científico</div>
+        <h1 className="section-title">Pesquisadores e Técnicos</h1>
         <div className="divider" />
 
         {membros.length === 0 ? (
-          <p style={{ color: 'var(--gray-600)', textAlign: 'center', padding: 48 }}>
-            Nenhum membro cadastrado ainda.
-          </p>
+          <p style={{ color: 'var(--gray-600)' }}>Nenhum membro listado na equipe institucional.</p>
         ) : (
-          <div className="team-grid">
-            {membros.map((m: any) => {
-              const initials = m.nome?.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() ?? '??';
-              return (
-                <div key={m.id} className="team-card">
-                  <div className="team-avatar">
-                    {m.imagem_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={m.imagem_url} alt={m.nome} />
-                    ) : (
-                      initials
-                    )}
-                  </div>
-                  <div className="team-name">{m.nome}</div>
-                  <div className="team-role">{m.cargo}</div>
-                  {m.lattes_url ? (
-                    <a href={m.lattes_url} className="btn-lattes" target="_blank" rel="noopener noreferrer">
-                      🎓 Currículo Lattes
-                    </a>
-                  ) : (
-                    <span className="btn-lattes" style={{ opacity: 0.4, cursor: 'default' }}>
-                      🎓 Lattes não informado
-                    </span>
-                  )}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginTop: '32px' }}>
+            {membros.map((membro) => (
+              <div key={membro.id} style={{ border: '1px solid var(--gray-200)', borderRadius: '12px', padding: '24px', textAlign: 'center', background: 'white', boxShadow: 'var(--shadow)' }}>
+                <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'var(--gray-100)', margin: '0 auto 16px', backgroundImage: membro.imagem_url ? `url(${membro.imagem_url})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifycontent: 'center', fontSize: '32px', color: 'var(--gray-400)' }}>
+                  {!membro.imagem_url && '🔬'}
                 </div>
-              );
-            })}
+                <h3 style={{ color: 'var(--navy)', marginBottom: '4px' }}>{membro.nome}</h3>
+                <p style={{ color: 'var(--gray-600)', fontSize: '14px', marginBottom: '16px' }}>{membro.cargo || 'Pesquisador'}</p>
+                {membro.lattes_url && (
+                  <a href={membro.lattes_url} target="_blank" rel="noopener noreferrer" className="btn-action" style={{ fontSize: '12px' }}>
+                    Currículo Lattes ↗
+                  </a>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>

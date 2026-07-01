@@ -13,8 +13,43 @@ import { ManageConfig } from "../../components/admin/ManageConfig";
 export default function AdminPage() {
   const [tab, setTab] = useState("dashboard");
   const [loading, setLoading] = useState(true);
+  
+  // Estados para armazenar as contagens do painel geral
   const [counts, setCounts] = useState({ equipments: 0, team: 0, reservations: 0 });
+  
+  // Estados para armazenar as listas de dados requisitadas pelos componentes filhos
+  const [equipments, setEquipments] = useState<any[]>([]);
+  const [team, setTeam] = useState<any[]>([]);
+  const [reservations, setReservations] = useState<any[]>([]);
+  
   const router = useRouter();
+
+  // Função centralizada para carregar todos os dados do banco do Supabase
+  async function loadData() {
+    try {
+      const [eqData, tmData, resData] = await Promise.all([
+        supabase.from("equipments").select("*").order("created_at", { ascending: false }),
+        supabase.from("team").select("*").order("name", { ascending: true }),
+        supabase.from("reservations").select("*").order("date", { ascending: false })
+      ]);
+
+      const loadedEquipments = eqData.data || [];
+      const loadedTeam = tmData.data || [];
+      const loadedReservations = resData.data || [];
+
+      setEquipments(loadedEquipments);
+      setTeam(loadedTeam);
+      setReservations(loadedReservations);
+
+      setCounts({
+        equipments: loadedEquipments.length,
+        team: loadedTeam.length,
+        reservations: loadedReservations.length
+      });
+    } catch (error) {
+      console.error("Erro ao carregar dados do Supabase:", error);
+    }
+  }
 
   useEffect(() => {
     async function checkAuth() {
@@ -22,23 +57,7 @@ export default function AdminPage() {
       if (!session) {
         router.push("/login");
       } else {
-        // Busca contagens reais do Supabase para alimentar as estatísticas do Dashboard
-        try {
-          const [eqCount, tmCount, resCount] = await Promise.all([
-            supabase.from("equipments").select("*", { count: "exact", head: true }),
-            supabase.from("team").select("*", { count: "exact", head: true }),
-            supabase.from("reservations").select("*", { count: "exact", head: true })
-          ]);
-
-          setCounts({
-            equipments: eqCount.count || 0,
-            team: tmCount.count || 0,
-            reservations: resCount.count || 0
-          });
-        } catch (error) {
-          console.error("Erro ao carregar estatísticas:", error);
-        }
-        
+        await loadData();
         setLoading(false);
       }
     }
@@ -64,9 +83,9 @@ export default function AdminPage() {
       
       <main className="flex-1 p-6 md:p-8 overflow-y-auto">
         {tab === "dashboard" && <DashboardStats counts={counts} />}
-        {tab === "equipments" && <ManageEquipments />}
-        {tab === "team" && <ManageTeam />}
-        {tab === "reservations" && <ManageReservations />}
+        {tab === "equipments" && <ManageEquipments data={equipments} refresh={loadData} />}
+        {tab === "team" && <ManageTeam data={team} refresh={loadData} />}
+        {tab === "reservations" && <ManageReservations data={reservations} refresh={loadData} />}
         {tab === "rules" && <ManageConfig section="rules" />}
         {tab === "config" && <ManageConfig section="regimento" />}
       </main>

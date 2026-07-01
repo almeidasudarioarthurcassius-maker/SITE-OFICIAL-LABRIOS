@@ -1,69 +1,54 @@
-// app/documentos/page.tsx  (Server Component)
 import { supabase } from '../../lib/supabase';
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Documentos e Relatórios — LTIP',
-  description: 'Acesse o repositório de relatórios, regimentos e documentos institucionais do Laboratório LTIP.',
-};
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-export const fetchCache = 'force-no-store';
+
+async function getDocumentos() {
+  const { data } = await supabase.from('documentos').select('*').order('data_upload', { ascending: false });
+  return data || [];
+}
 
 export default async function DocumentosPage() {
-  const { data, error } = await supabase
-    .from('documentos')
-    .select('*')
-    .order('data_upload', { ascending: false });
-
-  if (error) console.error('Erro ao carregar documentos:', error.message);
-
-  const docs = data ?? [];
+  const documentos = await getDocumentos();
 
   return (
-    <section
-      className="documents"
-      style={{ marginTop: 68, paddingTop: 80, background: 'var(--gray-50)', minHeight: '70vh' }}
-    >
+    <section style={{ marginTop: '68px', minHeight: 'calc(100vh - 300px)' }}>
       <div className="container">
-        <div className="section-label">Repositório Institucional</div>
-        <h1 className="section-title">Documentos e Relatórios</h1>
+        <div className="section-label">Repositório Digital</div>
+        <h1 className="section-title">Documentos Técnicos e Laudos</h1>
         <div className="divider" />
+        <p style={{ color: 'var(--gray-600)', marginBottom: '40px', maxWidth: '800px' }}>
+          Consulte as Notas Técnicas, Relatórios de Monitoramento Hidroquímico, Planilhas de Balneabilidade e Atas Emitidas pelo corpo técnico do LabRios.
+        </p>
 
-        {docs.length === 0 ? (
-          <p style={{ color: 'var(--gray-600)', textAlign: 'center', padding: 48 }}>
-            Nenhum documento publicado ainda.
-          </p>
+        {documentos.length === 0 ? (
+          <p style={{ color: 'var(--gray-600)' }}>Nenhum documento ou laudo publicado até o momento.</p>
         ) : (
-          <div className="docs-grid">
-            {docs.map((doc: any) => (
-              <div key={doc.id} className="doc-card">
-                <div className="doc-icon">📄</div>
-                <div>
-                  <div className="doc-name">{doc.titulo}</div>
-                  <div className="doc-meta">
-                    📁 {doc.categoria ?? 'Documento'} &nbsp;•&nbsp;
-                    🗓️ {new Date(doc.data_upload).toLocaleDateString('pt-BR', {
-                      day: '2-digit', month: 'short', year: 'numeric',
-                    })}
-                  </div>
-                </div>
-                <div className="doc-actions">
-                  <a
-                    href={doc.arquivo_url}
-                    className="btn-doc primary"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    👁️ Visualizar
-                  </a>
-                  <a href={doc.arquivo_url} className="btn-doc" download>
-                    ⬇️ Baixar
-                  </a>
-                </div>
-              </div>
-            ))}
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Título do Documento</th>
+                  <th>Categoria</th>
+                  <th>Data de Publicação</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {documentos.map((doc) => (
+                  <tr key={doc.id}>
+                    <td style={{ fontWeight: 600, color: 'var(--navy)' }}>{doc.titulo}</td>
+                    <td><span style={{ background: 'var(--gray-100)', padding: '4px 10px', borderRadius: '4px', fontSize: '12px' }}>{doc.categoria || 'Geral'}</span></td>
+                    <td>{new Date(doc.data_upload).toLocaleDateString('pt-BR')}</td>
+                    <td>
+                      <a href={doc.arquivo_url} target="_blank" rel="noopener noreferrer" className="btn-action">
+                        Download / Visualizar ↗
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

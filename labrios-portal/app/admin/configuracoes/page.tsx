@@ -97,7 +97,8 @@ export default function AdminConfiguracoesPage() {
       const horariosLimpo = contato.horarios.filter((h) => h.dias.trim().length > 0 || h.horario.trim().length > 0);
       const contatoFinal = { ...contato, horarios: horariosLimpo };
 
-      const upserts = [
+      // Tipado explicitamente como any[] para aceitar variações estruturais no campo jsonb "valor"
+      const upserts: any[] = [
         { chave: 'sobre', valor: sobre },
         { chave: 'contato', valor: contatoFinal },
         { chave: 'logo', valor: { url: novaLogoUrl } },
@@ -227,11 +228,11 @@ export default function AdminConfiguracoesPage() {
                   <label style={{ marginBottom: 6 }}>Horário</label>
                   <input placeholder="Ex: 08:00 às 12:00" value={h.horario} onChange={(e) => updateHorario(i, 'horario', e.target.value)} />
                 </div>
-                <button className="btn-danger-admin" onClick={() => removeHorario(i)} style={{ height: 42, marginBottom: 0 }}>🗑️</button>
+                <button type="button" className="btn-danger-admin" onClick={() => removeHorario(i)} style={{ height: 42, marginBottom: 0 }}>🗑️</button>
               </div>
             </div>
           ))}
-          <button className="btn-secondary-admin" onClick={addHorario} style={{ marginTop: 8 }}>➕ Adicionar Horário</button>
+          <button type="button" className="btn-secondary-admin" onClick={addHorario} style={{ marginTop: 8 }}>➕ Adicionar Horário</button>
         </div>
 
         <div className="admin-card">
@@ -247,11 +248,11 @@ export default function AdminConfiguracoesPage() {
                   <label style={{ marginBottom: 6 }}>Link URL</label>
                   <input placeholder="https://..." value={p.link} onChange={(e) => updateParceria(i, 'link', e.target.value)} />
                 </div>
-                <button className="btn-danger-admin" onClick={() => removeParceria(i)} style={{ height: 42, marginBottom: 0 }}>🗑️</button>
+                <button type="button" className="btn-danger-admin" onClick={() => removeParceria(i)} style={{ height: 42, marginBottom: 0 }}>🗑️</button>
               </div>
             </div>
           ))}
-          <button className="btn-secondary-admin" onClick={addParceria} style={{ marginTop: 8 }}>➕ Adicionar Parceria</button>
+          <button type="button" className="btn-secondary-admin" onClick={addParceria} style={{ marginTop: 8 }}>➕ Adicionar Parceria</button>
         </div>
 
         <button className="btn-primary-admin" onClick={saveAll} disabled={loading} style={{ padding: '14px 40px', fontSize: 15, borderRadius: 6 }}>

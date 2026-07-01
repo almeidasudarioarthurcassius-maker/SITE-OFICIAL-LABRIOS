@@ -1,27 +1,16 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
 
-export default function Footer() {
-  const [contato, setContato] = useState<any>(null);
-  const [parcerias, setParcerias] = useState<any[]>([]);
+interface FooterProps {
+  contato?: any;
+  parcerias?: any[];
+}
 
-  useEffect(() => {
-    async function fetchFooterData() {
-      const { data } = await supabase.from('configuracoes_site').select('*').in('chave', ['contato', 'parcerias']);
-      data?.forEach(row => {
-        if (row.chave === 'contato') setContato(row.valor);
-        if (row.chave === 'parcerias') setParcerias(row.valor);
-      });
-    }
-    fetchFooterData();
-  }, []);
-
+export default function Footer({ contato, parcerias = [] }: FooterProps) {
   return (
     <footer style={{ background: 'var(--navy)', color: 'white', padding: '40px 0', marginTop: '60px' }}>
       <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '40px' }}>
         
-        {/* Bloco de Endereço e Contato */}
+        {/* Bloco de Localização */}
         <div>
           <h4 style={{ color: 'white', marginBottom: '16px' }}>📍 Localização e Contato</h4>
           {contato ? (
@@ -33,28 +22,32 @@ export default function Footer() {
               <p>✉️ {contato.email}</p>
             </div>
           ) : (
-            <p style={{ fontSize: '14px', color: 'var(--gray-400)' }}>Carregando dados de contato...</p>
+            <p style={{ fontSize: '14px', color: 'var(--gray-400)' }}>Informações de contato não cadastradas.</p>
           )}
         </div>
 
         {/* Bloco de Horários */}
         <div>
           <h4 style={{ color: 'white', marginBottom: '16px' }}>🕒 Atendimento</h4>
-          {contato?.horarios?.map((h: any, idx: number) => (
-            <div key={idx} style={{ fontSize: '14px', marginBottom: '8px', color: 'var(--gray-300)' }}>
-              <strong>{h.dias}:</strong> {h.horario}
-            </div>
-          ))}
+          {contato?.horarios && contato.horarios.length > 0 ? (
+            contato.horarios.map((h: any, idx: number) => (
+              <div key={idx} style={{ fontSize: '14px', marginBottom: '8px', color: 'var(--gray-300)' }}>
+                <strong>{h.dias}:</strong> {h.horario}
+              </div>
+            ))
+          ) : (
+            <p style={{ fontSize: '14px', color: 'var(--gray-400)' }}>Nenhum horário definido.</p>
+          )}
         </div>
 
-        {/* Bloco Dinâmico de Parceiros */}
+        {/* Bloco de Parceiros */}
         <div>
           <h4 style={{ color: 'white', marginBottom: '16px' }}>🤝 Parceiros Institucionais</h4>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-            {parcerias.length === 0 ? (
+            {!parcerias || parcerias.length === 0 ? (
               <p style={{ fontSize: '14px', color: 'var(--gray-400)' }}>Nenhum apoiador listado.</p>
             ) : (
-              parcerias.map((p, idx) => (
+              parcerias.map((p: any, idx: number) => (
                 <a 
                   key={idx} 
                   href={p.link} 

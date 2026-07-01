@@ -43,7 +43,7 @@ export function ManageEquipments({ data, refresh }: { data: any[]; refresh: () =
           <input type="text" placeholder="Finalidade Analítica" value={purpose} onChange={e => setPurpose(e.target.value)} className="w-full sm:col-span-3 px-4 py-2 border border-gray-200 rounded-lg text-sm" />
           <input type="number" min="1" placeholder="Qtd" value={quantity} onChange={e => setQuantity(Number(e.target.value))} className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm" />
         </div>
-        <Button type="submit" variant="secondary">Salvar Equipamento</Button>
+        <Button type="submit">Salvar Equipamento</Button>
       </form>
 
       <div className="w-full overflow-x-auto rounded-xl border border-gray-200 bg-white">
@@ -63,7 +63,13 @@ export function ManageEquipments({ data, refresh }: { data: any[]; refresh: () =
                 <td className="px-6 py-4 text-gray-600">{eq.brand} ({eq.model})</td>
                 <td className="px-6 py-4 font-medium">{eq.quantity} un.</td>
                 <td className="px-6 py-4 text-center">
-                  <Button variant="danger" size="sm" onClick={() => handleDelete(eq.id)}>Excluir</Button>
+                  <button 
+                    type="button"
+                    onClick={() => handleDelete(eq.id)}
+                    className="bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white transition-all px-3 py-1.5 rounded text-xs font-semibold"
+                  >
+                    Excluir
+                  </button>
                 </td>
               </tr>
             ))}

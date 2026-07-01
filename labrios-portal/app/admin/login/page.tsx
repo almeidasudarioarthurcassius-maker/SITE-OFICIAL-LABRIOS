@@ -11,7 +11,7 @@ export default function AdminLoginPage() {
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    loading = true;
+    setLoading(true); // CORRIGIDO: Agora usa a função correta do useState
     setError(null);
 
     try {
@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
         throw new Error(data.message || 'Credenciais inválidas.');
       }
 
-      // CORREÇÃO: Redireciona para /admin (onde está a página do dashboard) e não /admin/dashboard
+      // Redireciona para /admin (onde está a página do dashboard)
       router.push('/admin');
       router.refresh();
     } catch (err: any) {

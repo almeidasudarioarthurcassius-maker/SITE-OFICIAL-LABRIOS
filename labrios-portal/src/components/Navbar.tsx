@@ -1,37 +1,37 @@
-﻿"use client";
-import React, { useState } from "react";
+"use client";
+import React from "react";
 import Link from "next/link";
+import { FlaskConical } from "lucide-react";
 
-export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-
+export default function Navbar() {
   return (
-    <nav class="navbar bg-navy text-white fixed top-0 left-0 right-0 h-[68px] flex items-center z-40 shadow-md">
-      <div class="max-w-[1280px] w-full mx-auto px-6 flex justify-between items-center">
-        <Link href="/" class="flex items-center gap-3 decoration-none">
-          <div class="bg-white/15 rounded-md px-3 py-1 font-extrabold text-lg tracking-wider text-white">
-            LABRIOS
+    <nav className="bg-[#002244] text-white fixed top-0 left-0 right-0 h-[68px] flex items-center z-50 shadow-md border-b border-white/5">
+      <div className="max-w-7xl w-full mx-auto px-4 md:px-6 flex justify-between items-center">
+        {/* Identidade Visual */}
+        <Link href="/" className="flex items-center gap-2.5 no-underline group">
+          <div className="bg-white/10 rounded-xl p-2 font-black text-sm tracking-tight text-white group-hover:bg-white/15 transition-all flex items-center gap-1.5">
+            <FlaskConical className="w-4 h-4 text-[#66BB6A]" />
+            <span>LABRIOS</span>
           </div>
-          <div class="text-xs leading-tight font-medium hidden sm:block">
-            <span class="block text-sm font-bold">LABRIOS / CESP</span>
-            Laboratório de Análise de Água do Baixo Amazonas
-          </div>
+          <span className="text-[11px] text-white/70 font-semibold tracking-wide uppercase hidden sm:block">
+            Laboratório de Análise de Água
+          </span>
         </Link>
 
-        <button onClick={() => setIsOpen(!isOpen)} class="sm:hidden flex flex-col gap-1.5 bg-none border-none cursor-pointer">
-          <span class="w-6 h-0.5 bg-white block rounded-sm" />
-          <span class="w-6 h-0.5 bg-white block rounded-sm" />
-          <span class="w-6 h-0.5 bg-white block rounded-sm" />
-        </button>
-
-        <div class={`${isOpen ? "flex" : "hidden"} sm:flex absolute sm:static top-[68px] left-0 right-0 bg-navy flex-col sm:flex-row p-6 sm:p-0 gap-1 sm:gap-2 shadow-lg sm:shadow-none border-t border-white/10 sm:border-none`}>
-          <a href="#inicio" class="text-white/85 hover:bg-white/12 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-all">Início</a>
-          <a href="#equipe" class="text-white/85 hover:bg-white/12 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-all">Equipe</a>
-          <a href="#regras" class="text-white/85 hover:bg-white/12 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-all">Como Utilizar</a>
-          <a href="#equipamentos" class="text-white/85 hover:bg-white/12 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-all">Equipamentos</a>
-          <a href="#agenda" class="text-white/85 hover:bg-white/12 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-all">Agenda</a>
-          <a href="#comites" class="text-white/85 hover:bg-white/12 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-all">Comitês</a>
-          <Link href="/login" class="bg-green hover:bg-green-light text-white px-4 py-2 rounded-lg text-sm font-semibold ml-0 sm:ml-2 text-center transition-all">Login</Link>
+        {/* Links Internos de Navegação */}
+        <div className="flex items-center gap-6 text-xs font-bold text-white/80">
+          <a href="#sobre" className="hover:text-white transition-colors no-underline">O Laboratório</a>
+          <a href="#atuacao" className="hover:text-white transition-colors no-underline hidden md:block">Áreas</a>
+          <a href="#equipamentos" className="hover:text-white transition-colors no-underline">Equipamentos</a>
+          <a href="#equipe" className="hover:text-white transition-colors no-underline hidden sm:block">Equipe</a>
+          <a href="#agenda" className="hover:text-white transition-colors no-underline">Agenda</a>
+          
+          <Link 
+            href="/login" 
+            className="bg-[#2E7D32] hover:bg-[#43A047] text-white px-3.5 py-2 rounded-xl transition-all font-bold shadow-md shadow-green-900/20 no-underline"
+          >
+            Acesso Restrito
+          </Link>
         </div>
       </div>
     </nav>

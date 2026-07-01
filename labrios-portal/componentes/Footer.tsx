@@ -1,41 +1,52 @@
-﻿'use client';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 
-export default function Footer() {
-  const [endereco, setEndereco] = useState('Carregando endereço...');
-  const [horario, setHorario] = useState('Segunda a Sexta — 08h às 18h');
+export type Parceria = { nome: string; link?: string };
+export type HorarioItem = { dias: string; horario: string };
+type Contato = {
+  endereco_linha1?: string;
+  endereco_linha2?: string;
+  cep?: string;
+  cidade?: string;
+  telefone?: string;
+  email?: string;
+  observacao?: string;
+  horarios?: HorarioItem[];
+};
 
-  useEffect(() => {
-    async function loadConfig() {
-      const { data } = await supabase.from('configuracoes_site').select('*');
-      if (data) {
-        const endItem = data.find(c => c.chave === 'endereco_laboratorio');
-        const horItem = data.find(c => c.chave === 'horario_funcionamento');
-        if (endItem) setEndereco(endItem.valor);
-        if (horItem) setHorario(horItem.valor);
-      }
-    }
-    loadConfig();
-  }, []);
+type Props = { contato?: Contato; parcerias?: Parceria[] };
+
+export default function Footer({ contato, parcerias }: Props) {
+  const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-navy-dark text-gray-300 py-8 border-t-4 border-ltip-green mt-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
+    <footer style={{ background: '#00252E', color: 'white', padding: '60px 0 30px', fontSize: '14px' }}>
+      <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '40px', marginBottom: '40px' }}>
         <div>
-          <h3 className="text-white font-bold text-base mb-3">Laboratório de Tecnologia da Informação do Prof. Água</h3>
-          <p className="text-gray-400">Promovendo inovação, pesquisa aplicada e capacitação para a comunidade acadêmica.</p>
+          <h4 style={{ color: '#B2DFDB', marginBottom: '16px', fontSize: '16px' }}>LabRios / CESP</h4>
+          <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.6' }}>
+            Laboratório de Análise de Água do Baixo e Médio Amazonas. Centro de Estudos Superiores de Parintins.
+          </p>
         </div>
         <div>
-          <h3 className="text-white font-bold text-base mb-3">Funcionamento e Localização</h3>
-          <p>{endereco}</p>
-          <p className="mt-2 text-ltip-green-accent font-medium">{horario}</p>
+          <h4 style={{ color: '#B2DFDB', marginBottom: '16px', fontSize: '16px' }}>Contato & Localização</h4>
+          <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.5' }}>
+            {contato?.endereco_linha1 || 'Estrada Odovaldo Novo, s/n'}<br />
+            {contato?.endereco_linha2 || 'Djard Vieira'}<br />
+            CEP: {contato?.cep || '69152-470'} — {contato?.cidade || 'Parintins – AM'}<br />
+            Email: {contato?.email || 'labrios.cesp@uea.edu.br'}
+          </p>
         </div>
         <div>
-          <h3 className="text-white font-bold text-base mb-3">Desenvolvimento</h3>
-          <p>Desenvolvido e mantido pelo próprio laboratório.</p>
-          <p className="mt-4 text-xs text-gray-500">© {new Date().getFullYear()} Laboratório de Tecnologia da Informação do Prof. Água. Todos os direitos reservados.</p>
+          <h4 style={{ color: '#B2DFDB', marginBottom: '16px', fontSize: '16px' }}>Links Rápidos</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <Link href="/#inventario" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Equipamentos</Link>
+            <Link href="/#agendamento" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Solicitar Reserva</Link>
+            <Link href="/documentos" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Relatórios Técnicos</Link>
+          </div>
         </div>
+      </div>
+      <div style={{ textAlign: 'center', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
+        <p>&copy; {currentYear} LabRios/CESP. Todos os direitos reservados.</p>
       </div>
     </footer>
   );

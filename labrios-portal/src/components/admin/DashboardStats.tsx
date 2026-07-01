@@ -11,7 +11,8 @@ interface DashboardStatsProps {
   };
 }
 
-export default function DashboardStats({ stats }: DashboardStatsProps) {
+// Alterado de "export default function" para "export function" para casar com o import antigo
+export function DashboardStats({ stats }: DashboardStatsProps) {
   const cards = [
     {
       icon: <Layers className="w-5 h-5 text-[#003366]" />,

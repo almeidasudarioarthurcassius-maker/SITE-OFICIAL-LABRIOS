@@ -24,7 +24,7 @@ export default async function EquipePage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginTop: '32px' }}>
             {membros.map((membro) => (
               <div key={membro.id} style={{ border: '1px solid var(--gray-200)', borderRadius: '12px', padding: '24px', textAlign: 'center', background: 'white', boxShadow: 'var(--shadow)' }}>
-                <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'var(--gray-100)', margin: '0 auto 16px', backgroundImage: membro.imagem_url ? `url(${membro.imagem_url})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifycontent: 'center', fontSize: '32px', color: 'var(--gray-400)' }}>
+                <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'var(--gray-100)', margin: '0 auto 16px', backgroundImage: membro.imagem_url ? `url(${membro.imagem_url})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: 'var(--gray-400)' }}>
                   {!membro.imagem_url && '🔬'}
                 </div>
                 <h3 style={{ color: 'var(--navy)', marginBottom: '4px' }}>{membro.nome}</h3>

@@ -5,15 +5,12 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
-    'Variáveis de ambiente NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY não configuradas. ' +
-    'Copie .env.local.example para .env.local e preencha com seus valores do Supabase.'
+    'Variáveis de ambiente NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY não configuradas.'
   );
 }
 
-// Cliente público — usado em Client Components e páginas públicas
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Cliente com service role — usado APENAS em Route Handlers do servidor (nunca exposto ao browser)
 export function createServiceClient() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceKey) {
@@ -23,8 +20,6 @@ export function createServiceClient() {
     auth: { persistSession: false },
   });
 }
-
-// ─── Tipos TypeScript mapeando as tabelas do Supabase ───────────────────────
 
 export type MembroEquipe = {
   id: number;

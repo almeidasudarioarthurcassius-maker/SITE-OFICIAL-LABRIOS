@@ -1,76 +1,69 @@
 'use client';
-// app/admin/login/page.tsx
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '../../../lib/supabase';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [erro, setErro] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  async function doLogin(e: React.FormEvent) {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    setErro('');
     setLoading(true);
+    setError(null);
+
     try {
-      const res = await fetch('/api/login', {
+      // Como o roteamento administrativo nativo do prompt e middleware usam cookies baseados na API de autenticação customizada do LTIP:
+      const response = await fetch('/api/admin/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha }),
+        body: JSON.stringify({ username, password }),
       });
-      const data = await res.json();
-      if (!data.ok) {
-        setErro(data.message || 'E-mail ou senha incorretos.');
-        setLoading(false);
-        return;
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Credenciais inválidas.');
       }
-      router.push('/admin');
+
+      router.push('/admin/dashboard');
       router.refresh();
-    } catch {
-      setErro('Erro de conexão. Tente novamente.');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'var(--gray-50)', marginTop: 0,
-      }}
-    >
-      <form onSubmit={doLogin} className="login-modal" style={{ boxShadow: 'var(--shadow-lg)' }}>
-        <h2>🔒 Área Restrita</h2>
-        <p>Acesso exclusivo para técnicos e coordenadores do LTIP.</p>
-
-        <div className="admin-input-group">
-          <label>E-mail institucional</label>
-          <input
-            type="email" placeholder="seu@email.edu.br" value={email}
-            onChange={(e) => setEmail(e.target.value)} required autoFocus
-          />
-        </div>
-        <div className="admin-input-group">
-          <label>Senha</label>
-          <input
-            type="password" placeholder="••••••••" value={senha}
-            onChange={(e) => setSenha(e.target.value)} required
-          />
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--gray-50)', padding: '2rem' }}>
+      <form onSubmit={handleLogin} style={{ background: 'white', padding: '40px', borderRadius: '12px', border: '1px solid var(--gray-200)', boxShadow: 'var(--shadow-lg)', width: '100%', maxWidth: '400px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <h2 style={{ color: 'var(--navy)' }}>Painel LabRios</h2>
+          <p style={{ color: 'var(--gray-600)', fontSize: '14px' }}>Autenticação Restrita</p>
         </div>
 
-        {erro && (
-          <p style={{ color: '#C62828', fontSize: 13, marginBottom: 12 }}>⚠️ {erro}</p>
+        {error && (
+          <div style={{ padding: '10px', background: '#FFEBEE', color: '#C62828', borderRadius: '6px', fontSize: '13px', marginBottom: '16px' }}>
+            {error}
+          </div>
         )}
 
-        <button className="btn-submit" type="submit" disabled={loading}>
-          {loading ? 'Entrando...' : 'Entrar'}
-        </button>
-
-        <div className="modal-footer">
-          <a href="/" style={{ color: 'var(--navy)' }}>← Voltar ao site</a>
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Usuário</label>
+          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--gray-400)' }} />
         </div>
+
+        <div style={{ marginBottom: '24px' }}>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Senha</label>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--gray-400)' }} />
+        </div>
+
+        <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', borderRadius: '6px', background: 'var(--navy)', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
+          {loading ? 'Autenticando...' : 'Entrar no Sistema'}
+        </button>
       </form>
     </div>
   );

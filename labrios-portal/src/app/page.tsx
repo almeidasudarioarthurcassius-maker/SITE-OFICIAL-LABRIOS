@@ -171,7 +171,7 @@ export default async function HomePage() {
             <ShieldCheck className="w-5 h-5 text-[#2E7D32]" /> Atividades Principais
           </h3>
           <ul className="space-y-2.5 text-sm text-gray-600 font-medium">
-            <li className="flex items-start gap-2">✓ Atividades integradas de pesquisa, desenvolvimento científico e inovação tecnológica.</li>
+            <li className="flex items-start gap-2">✓ Atividades integradas de pesquisa, development científico e inovação tecnológica.</li>
             <li className="flex items-start gap-2">✓ Formação contínua de recursos humanos altamente qualificados.</li>
             <li className="flex items-start gap-2">✓ Execução de análises físico-químicas básicas e de coliformes termotolerantes.</li>
             <li className="flex items-start gap-2">✓ Amostragem e levantamento técnico em corpos hídricos no Baixo Amazonas.</li>
@@ -242,4 +242,157 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* 7. EQUIPE E MEM
+      {/* 7. EQUIPE E MEMBROS */}
+      <section id="equipe" className="py-16 bg-gray-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 space-y-12">
+          <div className="space-y-2 text-center max-w-xl mx-auto">
+            <div className="text-xs font-bold text-[#2E7D32] uppercase tracking-wider mx-auto">Corpo Técnico</div>
+            <h2 className="text-3xl font-black text-[#003366] tracking-tight">Pesquisadores e Colaboradores</h2>
+            <p className="text-sm text-gray-500">A excelência do LABRIOS é mantida por profissionais dedicados à ciência.</p>
+          </div>
+
+          <div className="space-y-8">
+            {/* Núcleo Permanente */}
+            <div className="space-y-4">
+              <h3 className="text-base font-black text-[#003366] flex items-center gap-2 border-l-4 border-[#2E7D32] pl-3">Equipe de Execução</h3>
+              {coreTeam.length > 0 ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {coreTeam.map((m: any, idx: number) => (
+                    <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex gap-4 items-center">
+                      <div className="w-12 h-12 rounded-full bg-gray-50 border border-gray-100 shrink-0 flex items-center justify-center text-gray-400"><Users className="w-5 h-5" /></div>
+                      <div>
+                        <h4 className="font-extrabold text-sm text-[#003366]">{m.name}</h4>
+                        {m.role && <p className="text-xs text-gray-500 mt-0.5 font-medium">{m.role}</p>}
+                        {m.email && <p className="text-[11px] text-gray-400 mt-0.5 font-mono">{m.email}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 bg-white p-4 rounded-xl border border-gray-100 text-center">Nenhum executor cadastrado.</p>
+              )}
+            </div>
+
+            {/* Comitê ou Outros Membros */}
+            <div className="space-y-4">
+              <h3 className="text-base font-black text-[#003366] flex items-center gap-2 border-l-4 border-gray-400 pl-3">Membros do Comitê / Colaboradores</h3>
+              {committeeMembers.length > 0 ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {committeeMembers.map((m: any, idx: number) => (
+                    <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex gap-4 items-center">
+                      <div className="w-12 h-12 rounded-full bg-gray-50 border border-gray-100 shrink-0 flex items-center justify-center text-gray-400"><Users className="w-5 h-5" /></div>
+                      <div>
+                        <h4 className="font-extrabold text-sm text-[#003366]">{m.name}</h4>
+                        {m.role && <p className="text-xs text-gray-500 mt-0.5 font-medium">{m.role}</p>}
+                        {m.email && <p className="text-[11px] text-gray-400 mt-0.5 font-mono">{m.email}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 bg-white p-4 rounded-xl border border-gray-100 text-center">Nenhum membro do comitê cadastrado.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. CALENDÁRIO DE RESERVAS (AGENDA PÚBLICA) */}
+      <section id="agenda" className="py-16 max-w-7xl mx-auto px-4 md:px-6 space-y-12 border-b border-gray-100">
+        <div className="text-center max-w-xl mx-auto space-y-2">
+          <div className="text-xs font-bold text-[#2E7D32] uppercase tracking-wider mx-auto">Cronograma Operacional</div>
+          <h2 className="text-3xl font-black text-[#003366] tracking-tight">Agenda de Reservas de Equipamentos</h2>
+          <p className="text-sm text-gray-500">Acompanhe as datas reservadas para uso dos dispositivos técnicos do laboratório.</p>
+        </div>
+
+        {agenda && agenda.length > 0 ? (
+          <div className="max-w-4xl mx-auto bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100 text-xs font-bold uppercase tracking-wider text-gray-600">
+                    <th className="px-6 py-4">Data</th>
+                    <th className="px-6 py-4">Equipamento</th>
+                    <th className="px-6 py-4">Pesquisador / Solicitante</th>
+                    <th className="px-6 py-4">Turno</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 font-medium text-gray-700 text-xs">
+                  {agenda.map((item: any, idx: number) => (
+                    <tr key={idx} className="hover:bg-gray-50/60 transition-colors">
+                      <td className="px-6 py-4 font-bold text-[#003366] whitespace-nowrap flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        {new Date(item.date).toLocaleDateString("pt-BR")}
+                      </td>
+                      <td className="px-6 py-4 text-gray-900 font-semibold">{item.equipment?.name || "Equipamento Geral"}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{item.requester_name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="px-2 py-0.5 bg-gray-100 rounded-md font-bold text-gray-600 uppercase tracking-wide text-[10px]">
+                          {item.period || "Integral"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-xl mx-auto p-8 text-center bg-gray-50 rounded-2xl text-xs text-gray-400 border border-gray-100">
+            Nenhuma reserva ativa ou agendada encontrada no sistema.
+          </div>
+        )}
+      </section>
+
+      {/* 9. DOCUMENTOS INSTITUCIONAIS (REGIMENTO) */}
+      <section id="regimento" className="py-16 bg-gray-50 border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
+          <div className="text-xs font-bold text-[#2E7D32] uppercase tracking-wider mx-auto">Transparência e Regulação</div>
+          <h2 className="text-3xl font-black text-[#003366] tracking-tight">Regimento Interno e Normas de Uso</h2>
+          <p className="text-sm text-gray-600 max-w-xl mx-auto font-medium leading-relaxed">
+            Consulte as diretrizes regulatórias e normas de biossegurança do LABRIOS para garantir o uso correto, ético e seguro de toda a nossa infraestrutura física e analítica.
+          </p>
+          <div className="pt-4 flex flex-wrap justify-center gap-4">
+            <button className="bg-[#003366] hover:bg-[#002244] text-white font-bold text-xs px-6 py-3.5 rounded-xl shadow-lg shadow-blue-900/10 transition-all flex items-center gap-2">
+              <Download className="w-4 h-4" /> Baixar Regimento Técnico (PDF)
+            </button>
+            <button className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 font-bold text-xs px-6 py-3.5 rounded-xl shadow-sm transition-all flex items-center gap-2">
+              <FileText className="w-4 h-4" /> Normas de Biossegurança
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* 10. RODAPÉ INSTITUCIONAL */}
+      <footer className="bg-[#002244] text-white pt-12 pb-6 px-4 md:px-6 border-t border-white/5">
+        <div className="max-w-7xl mx-auto grid sm:grid-cols-2 md:grid-cols-3 gap-8 pb-10 border-b border-white/10 text-sm font-medium text-white/70">
+          <div className="space-y-4">
+            <h4 className="text-white font-black text-base tracking-tight">LABRIOS / UEA</h4>
+            <p className="text-xs leading-relaxed text-white/60">
+              Laboratório de Análise de Água do Baixo Amazonas vinculado ao Mestrado Profissional em Gestão e Regulação de Recursos Hídricos (ProfÁgua) no Centro de Estudos Superiores de Parintins (CESP).
+            </p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-white font-black text-sm tracking-wide uppercase">Links Úteis</h4>
+            <ul className="space-y-2 text-xs">
+              <li><a href="https://uea.edu.br" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">Universidade do Estado do Amazonas</a></li>
+              <li><a href="https://www.ana.gov.br/profagua" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">Portal Oficial ProfÁgua (CAPES)</a></li>
+            </ul>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-white font-black text-sm tracking-wide uppercase">Suporte Técnico</h4>
+            <p className="text-xs leading-relaxed text-white/60">
+              Para dúvidas operacionais ou problemas de agendamento de bancadas, entre em contato através do e-mail corporativo da coordenação.
+            </p>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto pt-6 flex flex-col md:flex-row justify-between items-center text-[11px] text-white/40 font-medium gap-4">
+          <p>© {new Date().getFullYear()} LABRIOS / CESP — Todos os direitos reservados.</p>
+          <p className="tracking-wide text-center md:text-right">
+            Créditos de Produção: <span className="text-white/60 font-bold uppercase">Laboratório de Tecnologia da Informação do ProfÁgua — LTIP</span>
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}

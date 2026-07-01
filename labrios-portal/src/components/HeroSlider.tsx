@@ -1,68 +1,98 @@
-﻿"use client";
+"use client";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, FlaskConical, ShieldCheck, Activity } from "lucide-react";
 
 const slides = [
   {
-    tag: "Pesquisa & Desenvolvimento",
-    title: "Análise de Água do Baixo Amazonas",
-    desc: "Laboratório vinculado ao ProfÁgua/UEA voltado para análises físico-químicas e microbiológicas servindo de apoio a dissertações e projetos de inovação regional.",
+    icon: <FlaskConical className="w-12 h-12 text-[#66BB6A]" />,
+    title: "Monitoramento Hídrico na Amazônia",
+    desc: "Análises físico-químicas e microbiológicas avançadas servindo de suporte estratégico para o desenvolvimento regional do Baixo Amazonas.",
   },
   {
-    tag: "Qualidade Ambiental",
-    title: "Monitoramento e Planejamento Sustentável",
-    desc: "Atividades essenciais na formação de recursos humanos e na amostragem estruturada de parâmetros ambientais para proteção dos recursos hídricos.",
+    icon: <ShieldCheck className="w-12 h-12 text-[#66BB6A]" />,
+    title: "Infraestrutura de Apoio ao ProfÁgua",
+    desc: "Espaço tecnológico dedicado à formação científica de alta qualidade e à execução de dissertações voltadas à regulação de recursos hídricos.",
+  },
+  {
+    icon: <Activity className="w-12 h-12 text-[#66BB6A]" />,
+    title: "Segurança Analítica e Rigor Técnico",
+    desc: "Exatidão laboratorial na amostragem e dosagem de coliformes termotolerantes com foco em saneamento e planejamento ambiental.",
   }
 ];
 
-export function HeroSlider() {
+export default function HeroSlider() {
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 6000);
-    return () => clearInterval(interval);
+    return () => clearInterval(timer);
   }, []);
 
-  return (
-    <div id="inicio" class="mt-[68px] relative h-[520px] overflow-hidden bg-navy-dark text-white">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={current}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
-          class="absolute inset-0 flex items-center bg-cover bg-center"
-          style={{ backgroundImage: `linear-gradient(90deg, rgba(0,33,68,0.92) 0%, rgba(0,33,68,0.5) 70%, transparent 100%)` }}
-        >
-          <div class="max-w-[1280px] w-full mx-auto px-6">
-            <span class="inline-block bg-green text-[11px] font-bold tracking-[1.5px] uppercase px-3 py-1 rounded-full mb-4">
-              {slides[current].tag}
-            </span>
-            <h1 class="text-3xl sm:text-5xl font-extrabold max-w-[650px] leading-tight mb-4">
-              {slides[current].title}
-            </h1>
-            <p class="text-base sm:text-lg max-w-[540px] text-white/85 mb-8 leading-relaxed">
-              {slides[current].desc}
-            </p>
-            <a href="#equipamentos" class="inline-flex items-center gap-2 bg-green hover:bg-green-light px-7 py-3 rounded-lg font-semibold text-sm transition-all shadow-md">
-              Visualizar Equipamentos
-            </a>
-          </div>
-        </motion.div>
-      </AnimatePresence>
+  const nextSlide = () => setCurrent((prev) => (prev + 1) % slides.length);
+  const prevSlide = () => setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
 
-      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-        {slides.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrent(idx)}
-            class={`h-2 rounded-full transition-all ${idx === current ? "bg-white w-6" : "bg-white/40 w-2"}`}
-          />
-        ))}
+  return (
+    <div id="inicio" className="relative h-[480px] overflow-hidden bg-gradient-to-br from-[#002244] via-[#003366] to-[#004488] text-white">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(46,125,50,0.08),transparent_60%)]"></div>
+      
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center relative z-10">
+        <div className="max-w-2xl w-full">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.4 }}
+              className="space-y-4"
+            >
+              <div className="inline-block p-3 bg-white/5 border border-white/10 rounded-2xl shadow-inner">
+                {slides[current].icon}
+              </div>
+              <h2 className="text-2xl md:text-4xl font-black tracking-tight leading-tight">
+                {slides[current].title}
+              </h2>
+              <p className="text-sm md:text-base text-white/80 leading-relaxed font-medium">
+                {slides[current].desc}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+
+          <div className="flex items-center gap-6 mt-8">
+            <div className="flex gap-2">
+              {slides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrent(idx)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    idx === current ? "w-6 bg-[#66BB6A]" : "w-1.5 bg-white/30 hover:bg-white/50"
+                  }`}
+                  aria-label={`Ir para o slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Botões Laterais de Navegação */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-4 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all z-20 hidden md:block"
+        aria-label="Slide anterior"
+      >
+        <ChevronLeft className="w-5 h-5" />
+      </button>
+      <button
+        onClick={nextSlide}
+        className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all z-20 hidden md:block"
+        aria-label="Próximo slide"
+      >
+        <ChevronRight className="w-5 h-5" />
+      </button>
     </div>
   );
 }

@@ -1,105 +1,104 @@
 'use client';
-// components/SchedulingForm.tsx
-import { useState } from 'react';
-import { supabase } from '../lib/supabase';
-import type { Equipamento } from '../lib/supabase';
-import Toast from './Toast';
+import { useState, FormEvent } from 'react';
+import { Equipamento, supabase } from '../lib/supabase';
 
 type Props = { equipamentos: Equipamento[] };
 
 export default function SchedulingForm({ equipamentos }: Props) {
-  const [form, setForm] = useState({
-    nome: '', email: '', equipamento: '', dataInicio: '', dataFim: '', finalidade: '',
-  });
-  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [equipamento, setEquipamento] = useState('');
+  const [dataInicio, setDataInicio] = useState('');
+  const [dataFim, setDataFim] = useState('');
+  const [finalidade, setFinalidade] = useState('');
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const handle = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
 
-  async function submit() {
-    if (!form.nome || !form.email || !form.equipamento) {
-      setToast({ msg: 'Preencha todos os campos obrigatórios.', type: 'error' });
+    if (!nome || !email || !equipamento || !dataInicio || !dataFim) {
+      setMessage({ type: 'error', text: 'Por favor, preencha todos os campos obrigatórios.' });
+      setLoading(false);
       return;
     }
-    setLoading(true);
+
     try {
-      const { error } = await supabase.from('solicitacoes').insert([{
-        nome: form.nome,
-        email: form.email,
-        equipamento: form.equipamento,
-        data_inicio: form.dataInicio || null,
-        data_fim: form.dataFim || null,
-        finalidade: form.finalidade || null,
-        status: 'pendente',
-      }]);
+      const { error } = await supabase.from('solicitacoes').insert([
+        {
+          nome,
+          email,
+          equipamento,
+          data_inicio: dataInicio,
+          data_fim: dataFim,
+          finalidade,
+          status: 'pendente',
+        },
+      ]);
+
       if (error) throw error;
-      setToast({ msg: 'Solicitação enviada! O laboratório entrará em contato pelo seu e-mail.', type: 'success' });
-      setForm({ nome: '', email: '', equipamento: '', dataInicio: '', dataFim: '', finalidade: '' });
+
+      setMessage({ type: 'success', text: 'Solicitação enviada com sucesso! Aguarde a análise por e-mail.' });
+      setNome(''); setEmail(''); setEquipamento(''); setDataInicio(''); setDataFim(''); setFinalidade('');
     } catch (err: any) {
-      setToast({ msg: 'Erro ao enviar solicitação: ' + (err.message ?? 'tente novamente.'), type: 'error' });
+      setMessage({ type: 'error', text: 'Erro ao enviar solicitação: ' + err.message });
     } finally {
       setLoading(false);
     }
-  }
-
-  const disponíveis = equipamentos.filter((e) => e.status === 'disponivel');
+  };
 
   return (
-    <>
-      {toast && (
-        <Toast message={toast.msg} type={toast.type} onDone={() => setToast(null)} />
+    <form onSubmit={handleSubmit} style={{ background: 'white', padding: '32px', borderRadius: '12px', border: '1px solid var(--gray-200)', boxShadow: 'var(--shadow)' }}>
+      <h3 style={{ marginBottom: '20px', color: 'var(--navy)' }}>Formulário de Solicitação</h3>
+      
+      {message && (
+        <div style={{ padding: '12px', borderRadius: '6px', marginBottom: '16px', fontSize: '14px', background: message.type === 'success' ? '#E8F5E9' : '#FFEBEE', color: message.type === 'success' ? '#2E7D32' : '#C62828' }}>
+          {message.text}
+        </div>
       )}
-      <div className="schedule-form">
-        <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--navy)', marginBottom: 24 }}>
-          Solicitar Reserva
-        </h3>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="sched-nome">Nome completo</label>
-            <input id="sched-nome" name="nome" type="text" placeholder="Seu nome" value={form.nome} onChange={handle} />
-          </div>
-          <div className="form-group">
-            <label htmlFor="sched-email">E-mail institucional</label>
-            <input id="sched-email" name="email" type="email" placeholder="nome@instituicao.edu.br" value={form.email} onChange={handle} />
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="sched-equip">Equipamento desejado</label>
-          <select id="sched-equip" name="equipamento" value={form.equipamento} onChange={handle}>
-            <option value="">Selecione um equipamento...</option>
-            {disponíveis.map((e) => (
-              <option key={e.id} value={e.nome_equipamento}>{e.nome_equipamento}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="sched-start">Data de início</label>
-            <input id="sched-start" name="dataInicio" type="date" value={form.dataInicio} onChange={handle} />
-          </div>
-          <div className="form-group">
-            <label htmlFor="sched-end">Data de término</label>
-            <input id="sched-end" name="dataFim" type="date" value={form.dataFim} onChange={handle} />
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="sched-purpose">Finalidade de uso</label>
-          <textarea
-            id="sched-purpose" name="finalidade" rows={3}
-            placeholder="Descreva brevemente o objetivo do uso do equipamento..."
-            value={form.finalidade} onChange={handle}
-          />
-        </div>
-
-        <button className="btn-submit" onClick={submit} disabled={loading}>
-          {loading ? 'Enviando...' : 'Enviar Solicitação'}
-        </button>
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Nome Completo *</label>
+        <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--gray-400)' }} />
       </div>
-    </>
+
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>E-mail Institucional *</label>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--gray-400)' }} />
+      </div>
+
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Equipamento / Espaço Solicitado *</label>
+        <select value={equipamento} onChange={(e) => setEquipamento(e.target.value)} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--gray-400)', background: 'white' }}>
+          <option value="">Selecione...</option>
+          <option value="Espaço Físico / Bancada de Triagem">Espaço Físico / Bancada de Triagem</option>
+          {equipamentos.filter(e => e.status === 'disponivel').map(e => (
+            <option key={e.id} value={e.nome_equipamento}>{e.nome_equipamento}</option>
+          ))}
+        </select>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Data Início *</label>
+          <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--gray-400)' }} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Data Fim *</label>
+          <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--gray-400)' }} />
+        </div>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Projeto de Pesquisa / Finalidade</label>
+        <textarea value={finalidade} onChange={(e) => setFinalidade(e.target.value)} rows={3} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--gray-400)', resize: 'vertical' }} />
+      </div>
+
+      <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', borderRadius: '6px', background: 'var(--navy)', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
+        {loading ? 'Enviando...' : 'Submeter Solicitação'}
+      </button>
+    </form>
   );
 }

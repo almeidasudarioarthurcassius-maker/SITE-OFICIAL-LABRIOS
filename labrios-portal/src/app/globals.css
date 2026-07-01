@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #003366;
+  --navy-dark: #002244;
+  --navy-light: #004488;
+  --green: #2E7D32;
+  --green-light: #43A047;
+  --green-accent: #66BB6A;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: #ffffff;
+  color: #333333;
+}
+
+/* Ajustes auxiliares para compatibilidade com o template visual do LTIP */
+.scroll-smooth {
+  scroll-behavior: smooth;
+}

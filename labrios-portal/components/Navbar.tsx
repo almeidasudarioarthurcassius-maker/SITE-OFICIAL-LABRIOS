@@ -1,33 +1,38 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 import Link from 'next/link';
 
-type Props = { logoUrl: string | null };
+export default function Navbar() {
+  const [logoUrl, setLogoUrl] = useState<string>('/logo-placeholder.png'); // Imagem padrão caso não tenha no banco
 
-export default function Navbar({ logoUrl }: Props) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+    async function fetchLogo() {
+      const { data } = await supabase
+        .from('configuracoes_site')
+        .select('valor')
+        .eq('chave', 'logo')
+        .single();
+      
+      if (data?.valor?.url) {
+        setLogoUrl(data.valor.url);
+      }
+    }
+    fetchLogo();
+  }, []);
 
   return (
-    <nav className="navbar">
-      <div className="navbar-inner">
-        <Link href="/" className="navbar-brand">
-          <div className="navbar-logo">
-            {logoUrl ? <img src={logoUrl} alt="LabRios" style={{ height: '40px' }} /> : 'LabRios'}
-          </div>
-          <div className="navbar-title">
-            <strong>LabRios / CESP</strong>
-            <span>Análise de Água do Amazonas</span>
-          </div>
+    <nav style={{ position: 'fixed', top: 0, width: '100%', height: '68px', background: 'white', borderBottom: '1px solid var(--gray-200)', zIndex: 1000, display: 'flex', alignItems: 'center', padding: '0 20px' }}>
+      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <Link href="/">
+          <img 
+            src={logoUrl} 
+            alt="Logo LabRios" 
+            style={{ height: '45px', maxWidth: '200px', objectFit: 'contain', cursor: 'pointer' }} 
+            onError={(e) => { (e.target as HTMLImageElement).src = '/logo-placeholder.png'; }}
+          />
         </Link>
-
-        <div className="navbar-nav">
-          <Link href="/#inventario">Equipamentos</Link>
-          <Link href="/#agendamento">Agendamento</Link>
-          <Link href="/documentos">Documentos</Link>
-          <Link href="/equipe">Equipe</Link>
-          <Link href="/#sobre">Sobre</Link>
-          <Link href="/admin/login" className="btn-login">🔒 Área Administrativa</Link>
-        </div>
+        {/* Seus links normais do menu aqui... */}
       </div>
     </nav>
   );

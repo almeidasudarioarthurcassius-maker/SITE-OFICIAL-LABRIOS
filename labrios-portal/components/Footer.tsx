@@ -56,7 +56,7 @@ export default function Footer({ contato, parcerias = [] }: FooterProps) {
               {contato.email && <p>✉️ {contato.email}</p>}
             </div>
           ) : (
-            <p style={{ fontSize: '14px', color: 'var(--gray-400, #9E9E9E)', italic: 'true' }}>Informações de contato não configuradas.</p>
+            <p style={{ fontSize: '14px', color: 'var(--gray-400, #9E9E9E)', fontStyle: 'italic' }}>Informações de contato não configuradas.</p>
           )}
         </div>
 
